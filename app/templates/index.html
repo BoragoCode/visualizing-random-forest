@@ -5,8 +5,14 @@
 <div class="jumbotron">
     <h1>Demo Flask App</h1>
 {#    <button class="btn btn-lg upload-btn" type="button">File Upload</button>#}
-    <input id="upload-input" type="file" name="uploads[]">
-    <button id="submit">Submit</button>
+{#    <input id="upload-input" type="file" name="uploads[]">#}
+    <div id="dvImportSegments" class="fileupload ">
+    <fieldset>
+        <legend>Upload your CSV File</legend>
+            <input type="file" name="File Upload" id="txtFileUpload" accept=".csv" />
+   </fieldset>
+    </div>
+{#    <button id="submit">Submit</button>#}
 {#    <button class="btn btn-lg result-btn" type="button">Results</button>#}
     <p id="results">Results will go here<p>
 </div>

@@ -1,4 +1,3 @@
-import os
 
 from flask import render_template, flash, json, jsonify
 
@@ -25,7 +24,9 @@ def about():
 def learning():
     data = json.loads(request.data)
     response = testfunction(data)
-    return jsonify(response)
+    response = json.dumps(response)
+    return response
+    # return jsonify(response)
 
     # data == {"userInput": "data readin"}
     # file = request.files['uploads[]']
