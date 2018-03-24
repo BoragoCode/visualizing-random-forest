@@ -6,8 +6,6 @@ from app import app
 from flask import request, redirect, url_for
 from werkzeug.utils import secure_filename
 
-from flask import send_from_directory
-
 from app.testscript import testfunction
 
 @app.route('/')

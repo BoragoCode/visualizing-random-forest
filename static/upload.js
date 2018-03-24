@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    var tree = new Tree();
     // The event listener for the file upload
     document.getElementById('txtFileUpload').addEventListener('change', upload, false);
 
@@ -37,8 +38,10 @@ $(document).ready(function() {
                     contentType: 'application/json',
                     success: function (response) {
                         // alert(response.status);
-                        console.log('upload successful!\n' + response);
-                        $("#results").text(response);
+                        console.log('upload successful!\n');
+                        tree.create(response)
+                        // tree.create();
+                        // $("#results").text(response);
                     }
                  })//close ajax call
                 }
