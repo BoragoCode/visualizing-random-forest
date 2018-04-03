@@ -49,3 +49,8 @@ venv/
 # Ide #
 #######
 *.vscode
+
+# Files #
+########
+app/testscript_backup.py
+app/testscript_tree_to_json.py

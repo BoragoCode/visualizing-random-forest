@@ -1,22 +1,15 @@
 class Tree{
     constructor(){
-        this.margin = {top: 20, right: 120, bottom: 20, left: 180};
+        this.margin = {top: 20, right: 120, bottom: 20, left: 120};
         this.width = 960 - this.margin.right - this.margin.left;
-        this.height = 480 - this.margin.top - this.margin.bottom;
-        // console.log('tree constructor:');
-        // select div
-        // let nodeLink = d3.select("#nodeLink");
-        //select that.svg element within the div
-        // this.that.svg = nodeLink.select("#canvas")
-        //     .attr("width",this.width)
-        //     .attr("height",this.height);
-
+        this.height = 960 - this.margin.top - this.margin.bottom;
 
         this.svg = d3.select("#nodeLink").select("#canvas")
         .attr("width", this.width + this.margin.right + this.margin.left)
         .attr("height", this.height + this.margin.top + this.margin.bottom)
         .append("g")
-        .attr("transform", "translate("+ this.margin.left + "," + this.margin.top + ")");
+        .attr("transform", "translate("+ 0 + "," + this.margin.top *2  + ")");
+        // .attr("transform", "translate("+ this.margin.left + "," + this.margin.top + ")");
 
 
     }
@@ -48,8 +41,8 @@ class Tree{
         // Collapse the node and all it's children
         function collapse(d) {
             if(d.children) {
-            d._children = d.children
-            d._children.forEach(collapse)
+            d._children = d.children;
+            d._children.forEach(collapse);
             d.children = null
             }
         }

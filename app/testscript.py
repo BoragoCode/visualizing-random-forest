@@ -1,10 +1,11 @@
-from sklearn import datasets
 import pandas as pd
-from sklearn import tree
+import sklearn
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from collections import defaultdict
+
 
 def datapreprocessing(dataset):
     # data preprocessing
@@ -48,34 +49,41 @@ def rules(clf, features, labels, node_index=0):
                             rules(clf, features, labels, left_index)]
     return node
 
-def testfunction(data):
-    # print(data)
-    target_column = 'label'
-    # create a dataframe object
-    dataset =pd.DataFrame.from_records(data)
 
-    # separating label data from rest of the data
-    X, y = dataset.drop(target_column, axis=1), dataset[target_column]
+# if default data then load iris
+def testfunction(data = 'null', defaultdata = True):
+    if defaultdata == True:
+        iris = load_iris()
+        X, y = iris.data, iris.target
 
-    clf = DecisionTreeClassifier(max_depth=3)
-    clf.fit(X, y)
-    test1, test2 = X.columns.values, y.unique()
-    tree = rules(clf, X.columns.values, y.unique())
-
-    '''
-    clf = tree.DecisionTreeClassifier()
-    iris = load_iris()
-    clf = clf.fit(iris.data, iris.target)
-    dotfile = open("tree.dot", 'w')
-    tree.export_graphviz(clf, out_file = 'tree.dot')
-    dotfile.close()
-    '''
-
+        model = RandomForestClassifier(max_depth=3, random_state=0)
+        model.fit(X, y)
+        # model.estimators_[i].tree_ gives ith tree
+        tree = rules(model.estimators_[0], iris.feature_names, iris.target_names)
+        # print(tree)
+        # print(model.estimators_[0].tree_)
+        # print(model.estimators_[0].tree_.children_left)
+        # print(model.estimators_[0].tree_.children_right)
+        # print(iris.feature_names[model.estimators_[0].tree_.feature[0]])
+        return tree
+    else:
+        target_column = 'label'
+        # create a dataframe object
+        dataset =pd.DataFrame.from_records(data)
+        # separating label data from rest of the data
+        X, y = dataset.drop(target_column, axis=1), dataset[target_column]
+        # fit a randomforestclassifier
+        model = RandomForestClassifier(max_depth=3, random_state=0)
+        model.fit(X, y)
+        # model.estimators_[i].tree_ gives ith tree
+        tree = rules(model.estimators_[0], X.columns.values, y.unique())
 
 
     if data:
-        # return cross_validated_scores
         return tree
-        # return ['hello test data', ' inside the function']
     else:
         return ['data not found', ': inside tree function']
+
+
+# if __name__ == '__main__':
+#     testfunction(defaultdata=True)

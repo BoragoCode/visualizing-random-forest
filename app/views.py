@@ -21,9 +21,16 @@ def about():
 @app.route('/learning', methods=['POST'])
 def learning():
     data = json.loads(request.data)
-    response = testfunction(data)
+    response = testfunction(data=data, defaultdata=False)
     response = json.dumps(response)
     return response
+
+@app.route('/defaultdata', methods=['POST'])
+def defaultdata():
+    response = testfunction(defaultdata=True)
+    response = json.dumps(response)
+    return response
+
     # return jsonify(response)
 
     # data == {"userInput": "data readin"}

@@ -2,7 +2,23 @@ $(document).ready(function() {
     var tree = new Tree();
     // The event listener for the file upload
     document.getElementById('txtFileUpload').addEventListener('change', upload, false);
-
+    document.getElementById('defaultData').addEventListener('change', defaultData, false);
+    
+    function defaultData(evt) {
+        // console.log($("#defaultData").val());
+        if($("#defaultData").val()){
+            $.ajax({
+                type: "POST",
+                url: '/defaultdata',
+                data: JSON.stringify({}),
+                contentType: 'application/json',
+                success: function (response) {
+                        tree.create(response)
+                }
+             })//close
+        }
+    }
+    
     // Method that checks that the browser supports the HTML5 File API
     function browserSupportFileUpload() {
         var isCompatible = false;
@@ -28,6 +44,7 @@ $(document).ready(function() {
                     console.log("Errors:", results.errors);
                     if (results.data && results.data.length > 0) {
                         alert('Imported -' + results.data.length + '- rows successfully!');
+                        $("#defaultData").prop("selectedIndex", 0);
                     } else {
                         alert('No data to import!');
                     }
@@ -38,12 +55,13 @@ $(document).ready(function() {
                     contentType: 'application/json',
                     success: function (response) {
                         // alert(response.status);
+                        console.log(response);
                         console.log('upload successful!\n');
                         tree.create(response)
                         // tree.create();
                         // $("#results").text(response);
                     }
-                 })//close ajax call
+                 })//close
                 }
             });
         }

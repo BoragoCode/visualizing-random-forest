@@ -3,18 +3,41 @@
 {% block body %}
 <script src="/static/upload.js"></script>
 <div class="jumbotron">
-    <h1>Demo Flask App</h1>
+    <h2>Random forest</h2>
 {#    <button class="btn btn-lg upload-btn" type="button">File Upload</button>#}
 {#    <input id="upload-input" type="file" name="uploads[]">#}
     <div id="dvImportSegments" class="fileupload ">
     <fieldset>
         <legend>Upload your CSV File</legend>
             <input type="file" name="File Upload" id="txtFileUpload" accept=".csv" />
-   </fieldset>
+    </fieldset>
+        <div>
+            <select id = "defaultData" class="selectpicker">
+            <option disabled selected value = ""> Pick dataset </option>
+            {#          <option selected disabled hidden style='display: none' value=''></option>#}
+            {#          <option value="">Default data</option>#}
+            <option value = "Iris">Iris Data</option>
+            </select>
+        </div>
     </div>
-{#    <button id="submit">Submit</button>#}
-{#    <button class="btn btn-lg result-btn" type="button">Results</button>#}
-    <p id="results">Results will go here<p>
+{#    <p id="results">Results will go here<p>#}
+    <form>
+{#      <div class="input-group mb-2 mr-sm-2 mb-sm-0">#}
+{#        <div class="input-group-addon"></div>#}
+{#        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username">#}
+{#      </div>#}
+        {#      <div class="form-group row">#}
+{#        <label for="formGroupExampleInput">Example label</label>#}
+{#        <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Example input">#}
+{#      </div>#}
+{#      <div class="form-group row">#}
+{#        <label for="formGroupExampleInput2">Another label</label>#}
+{#        <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Another input">#}
+{#      </div>#}
+    </form>
+
+
+
     <div id="nodeLink">
         <svg id="canvas"></svg>
     </div>
