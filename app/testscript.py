@@ -60,7 +60,13 @@ def testfunction(data = 'null', defaultdata = True):
         model.fit(X, y)
         # model.estimators_[i].tree_ gives ith tree
         tree = rules(model.estimators_[0], iris.feature_names, iris.target_names)
-        # print(tree)
+        tree_list = []
+        # TODO: aggregate the trees such that features and respective occurance at each level is recorded
+        # model.estimators_: list of sk learn decision trees
+        for index in range(len(model.estimators_)):
+            tree_list.append(rules(model.estimators_[index], iris.feature_names, iris.target_names))
+
+        # print(tree_list)
         # print(model.estimators_[0].tree_)
         # print(model.estimators_[0].tree_.children_left)
         # print(model.estimators_[0].tree_.children_right)
@@ -85,5 +91,5 @@ def testfunction(data = 'null', defaultdata = True):
         return ['data not found', ': inside tree function']
 
 
-# if __name__ == '__main__':
-#     testfunction(defaultdata=True)
+if __name__ == '__main__':
+    testfunction(defaultdata=True)
