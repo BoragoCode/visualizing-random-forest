@@ -5,7 +5,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from collections import defaultdict
-
+import json
 
 def datapreprocessing(dataset):
     # data preprocessing
@@ -65,14 +65,16 @@ def testfunction(data = 'null', defaultdata = True):
         # model.estimators_: list of sk learn decision trees
         for index in range(len(model.estimators_)):
             tree_list.append(rules(model.estimators_[index], iris.feature_names, iris.target_names))
-
+        # print(json.dumps(tree_list, indent=2, sort_keys=True))
         # print(tree_list)
         # print(model.estimators_[0].tree_)
         # print(model.estimators_[0].tree_.children_left)
         # print(model.estimators_[0].tree_.children_right)
         # print(iris.feature_names[model.estimators_[0].tree_.feature[0]])
+        print(json.dumps(tree, indent=2, sort_keys=True))
         return tree
     else:
+        # data = data["data"]
         target_column = 'label'
         # create a dataframe object
         dataset =pd.DataFrame.from_records(data)
@@ -91,5 +93,5 @@ def testfunction(data = 'null', defaultdata = True):
         return ['data not found', ': inside tree function']
 
 
-if __name__ == '__main__':
-    testfunction(defaultdata=True)
+# if __name__ == '__main__':
+#     testfunction(defaultdata=True)

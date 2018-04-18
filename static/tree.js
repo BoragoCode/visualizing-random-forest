@@ -10,13 +10,15 @@ class Tree{
         .append("g")
         .attr("transform", "translate("+ 0 + "," + this.margin.top *2  + ")");
         // .attr("transform", "translate("+ this.margin.left + "," + this.margin.top + ")");
-
-
     }
 
     create(response_data){
-        console.log('tree create:');
+        // console.log('tree create function:');
         var that = this;
+        this.svg.selectAll('g').remove();
+
+        that.svg.append('g')
+        .attr("transform", "translate("+ 0 + "," + this.margin.top *2  + ")");
 
         var treeData = JSON.parse( response_data );
         // console.log(root);
@@ -91,7 +93,7 @@ class Tree{
                 //     return d.children || d._children ? "end" : "start";
                 // })
                 .attr("text-anchor", "middle")
-                .text(function(d) { return d.data.name; });
+                .text(function(d) { console.log(d); return d.data.name; });
           
             // UPDATE
             var nodeUpdate = nodeEnter.merge(node);
@@ -172,7 +174,7 @@ class Tree{
               var path = `M ${s.x} ${s.y}
                       C ${s.x} ${(s.y + d.y) / 2},
                         ${d.x} ${(s.y + d.y) / 2},
-                        ${d.x} ${d.y}`
+                        ${d.x} ${d.y}`;
           
               return path
             }

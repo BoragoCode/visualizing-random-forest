@@ -10,7 +10,7 @@
     <fieldset>
         <legend>Upload your CSV File</legend>
             <input type="file" name="File Upload" id="txtFileUpload" accept=".csv" />
-    </fieldset>
+    </fieldset> <br>
         <div>
             <select id = "defaultData" class="selectpicker">
             <option disabled selected value = ""> Pick dataset </option>
@@ -19,14 +19,21 @@
             <option value = "Iris">Iris Data</option>
             </select>
         </div>
-    </div>
+    </div> <br>
 {#    <p id="results">Results will go here<p>#}
+{#    <form id = "submitParams">#}
     <form>
-{#      <div class="input-group mb-2 mr-sm-2 mb-sm-0">#}
-{#        <div class="input-group-addon"></div>#}
-{#        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username">#}
-{#      </div>#}
-        {#      <div class="form-group row">#}
+      <div class="input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3">
+        <div class="input-group-addon">Depth of tree</div>
+        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Default">
+      </div>
+      <div class="input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3">
+        <div class="input-group-addon">Min Split</div>
+        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Default">
+      </div>
+      <input type="submit" id = "submitParams" value="Submit">
+{#      <button type="submit" class="btn btn-default">Submit</button>#}
+{#      <div class="form-group row">#}
 {#        <label for="formGroupExampleInput">Example label</label>#}
 {#        <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Example input">#}
 {#      </div>#}
@@ -35,7 +42,6 @@
 {#        <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Another input">#}
 {#      </div>#}
     </form>
-
 
 
     <div id="nodeLink">

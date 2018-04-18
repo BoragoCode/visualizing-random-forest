@@ -6,7 +6,7 @@ from app import app
 from flask import request, redirect, url_for
 from werkzeug.utils import secure_filename
 
-from app.testscript import testfunction
+from app.rfmodel import testfunction
 
 @app.route('/')
 def index():
@@ -20,9 +20,12 @@ def about():
 
 @app.route('/learning', methods=['POST'])
 def learning():
+    # request.get_data()
     data = json.loads(request.data)
-    response = testfunction(data=data, defaultdata=False)
+    # print(data)
+    response = testfunction(data=data["data"], defaultdata=False)
     response = json.dumps(response)
+    # print(response)
     return response
 
 @app.route('/defaultdata', methods=['POST'])
@@ -31,15 +34,6 @@ def defaultdata():
     response = json.dumps(response)
     return response
 
-    # return jsonify(response)
-
-    # data == {"userInput": "data readin"}
-    # file = request.files['uploads[]']
-    # if file:
-    #     filename = secure_filename(file.filename)
-    #     # file.save(os.path.join('/tmp/', filename))
-    #     # file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    # return 'hello test'
 
     # data = json.loads(request.data)
     # data == {"userInput": "data readin"}
