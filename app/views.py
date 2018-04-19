@@ -30,14 +30,12 @@ def learning():
 
 @app.route('/defaultdata', methods=['POST'])
 def defaultdata():
-    response = testfunction(defaultdata=True)
+    data = json.loads(request.data)
+    response = testfunction(max_depth=data["depth"],
+                            min_samples_split=data["minSampleSplit"], defaultdata=True)
     response = json.dumps(response)
     return response
 
-
-    # data = json.loads(request.data)
-    # data == {"userInput": "data readin"}
-    # response = testfunction(data)
     # return jsonify(response)
 
 

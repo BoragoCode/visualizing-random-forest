@@ -51,12 +51,22 @@ def rules(clf, features, labels, node_index=0):
 
 
 # if default data then load iris
-def testfunction(data = 'null', defaultdata = True):
-    if defaultdata == True:
+def testfunction(max_depth, min_samples_split, data='null', defaultdata=True):
+    # if max_depth:
+    if max_depth != "":
+        max_depth = int(max_depth)  # parse value
+    else:
+        max_depth = None
+    if min_samples_split != "":
+        min_samples_split = int(min_samples_split)  # parse value
+    else:
+        min_samples_split = 2  # default value
+
+    if defaultdata:
         iris = load_iris()
         X, y = iris.data, iris.target
-
-        model = RandomForestClassifier(max_depth=3, random_state=0)
+        model = RandomForestClassifier(max_depth=max_depth,
+                                       min_samples_split=min_samples_split, random_state=0)
         model.fit(X, y)
         # model.estimators_[i].tree_ gives ith tree
         tree = rules(model.estimators_[0], iris.feature_names, iris.target_names)
@@ -71,7 +81,7 @@ def testfunction(data = 'null', defaultdata = True):
         # print(model.estimators_[0].tree_.children_left)
         # print(model.estimators_[0].tree_.children_right)
         # print(iris.feature_names[model.estimators_[0].tree_.feature[0]])
-        print(json.dumps(tree, indent=2, sort_keys=True))
+        # print(json.dumps(tree, indent=2, sort_keys=True))
         return tree
     else:
         # data = data["data"]
@@ -85,7 +95,6 @@ def testfunction(data = 'null', defaultdata = True):
         model.fit(X, y)
         # model.estimators_[i].tree_ gives ith tree
         tree = rules(model.estimators_[0], X.columns.values, y.unique())
-
 
     if data:
         return tree

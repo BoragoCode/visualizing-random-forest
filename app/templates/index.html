@@ -4,8 +4,6 @@
 <script src="/static/upload.js"></script>
 <div class="jumbotron">
     <h2>Random forest</h2>
-{#    <button class="btn btn-lg upload-btn" type="button">File Upload</button>#}
-{#    <input id="upload-input" type="file" name="uploads[]">#}
     <div id="dvImportSegments" class="fileupload ">
     <fieldset>
         <legend>Upload your CSV File</legend>
@@ -14,41 +12,28 @@
         <div>
             <select id = "defaultData" class="selectpicker">
             <option disabled selected value = ""> Pick dataset </option>
-            {#          <option selected disabled hidden style='display: none' value=''></option>#}
-            {#          <option value="">Default data</option>#}
             <option value = "Iris">Iris Data</option>
             </select>
         </div>
     </div> <br>
-{#    <p id="results">Results will go here<p>#}
-{#    <form id = "submitParams">#}
     <form>
-      <div class="input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3">
-        <div class="input-group-addon">Depth of tree</div>
-        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Default">
+      <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3"> {#id="inlineFormInputGroup"#}
+        <div class="input-group-addon">max depth</div>
+        <input type="number" min = 1 id = "depthVal" class="form-control" placeholder="Default">
       </div>
-      <div class="input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3">
-        <div class="input-group-addon">Min Split</div>
-        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Default">
+      <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3">
+        <div class="input-group-addon">min samples split</div>
+        <input type="number" min = 2 id = "minSampleSplit" class="form-control" placeholder="Default">
       </div>
-      <input type="submit" id = "submitParams" value="Submit">
-{#      <button type="submit" class="btn btn-default">Submit</button>#}
-{#      <div class="form-group row">#}
-{#        <label for="formGroupExampleInput">Example label</label>#}
-{#        <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Example input">#}
-{#      </div>#}
-{#      <div class="form-group row">#}
-{#        <label for="formGroupExampleInput2">Another label</label>#}
-{#        <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Another input">#}
-{#      </div>#}
+      <button type="button" id = "submitParams" class="btn btn-default">Submit</button>
     </form>
-
 
     <div id="nodeLink">
         <svg id="canvas"></svg>
     </div>
 </div>
-        <!-- Internal Scripts -->
-    <script type="application/javascript" src="/static/tree.js"></script>
+
+<!-- Internal Scripts -->
+<script type="application/javascript" src="/static/tree.js"></script>
 
 {% endblock %}

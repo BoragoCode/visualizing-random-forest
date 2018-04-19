@@ -36,7 +36,7 @@ class Tree{
         root.y0 = 0;
         
         // Collapse after the second level
-        root.children.forEach(collapse);
+        // root.children.forEach(collapse);
 
         update(root);
 
@@ -93,7 +93,7 @@ class Tree{
                 //     return d.children || d._children ? "end" : "start";
                 // })
                 .attr("text-anchor", "middle")
-                .text(function(d) { console.log(d); return d.data.name; });
+                .text(function(d) {  return d.data.name; });
           
             // UPDATE
             var nodeUpdate = nodeEnter.merge(node);
