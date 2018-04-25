@@ -34,7 +34,12 @@ class Tree{
         root = d3.hierarchy(treeData, function(d) { return d.children; });
         root.x0 = this.height / 2;
         root.y0 = 0;
-        
+
+        // console.log(root.leaves());
+        // root.leaves().forEach(function (leaf) {
+        //
+        // });
+
         // Collapse after the second level
         // root.children.forEach(collapse);
 
@@ -65,7 +70,11 @@ class Tree{
           
             // Update the nodes...
             var node = that.svg.selectAll('g.node')
-                .data(nodes, function(d) {return d.id || (d.id = ++i); });
+                .data(nodes, function(d) {
+                    // console.log(d);
+                    // console.log(d.hasOwnProperty('children'));
+                    return d.id || (d.id = ++i);
+                });
           
             // Enter any new modes at the parent's previous position.
             var nodeEnter = node.enter().append('g')
@@ -94,7 +103,53 @@ class Tree{
                 // })
                 .attr("text-anchor", "middle")
                 .text(function(d) {  return d.data.name; });
-          
+
+            nodeEnter.each(function (d) {
+               if(!d.hasOwnProperty('children')){
+                   drawLeafNode(d3.select(this), d);
+               }
+            });
+
+            function drawLeafNode(element, d){
+                // console.log((d.data.name).split(',').map(s => s.split(': ')))
+                // console.log(d.data.name);
+                // console.log((d.data.name).split(','));
+
+                var counts = [];
+                (d.data.name).split(',').forEach(function (name) {
+                    var arr = name.trim().split(':');
+                    // console.log({'key':arr[0].trim(), 'value': arr[1].trim()});
+                    counts.push({'key':arr[0].trim(), 'value': arr[1].trim()});
+                });
+                console.log(counts);
+
+               // Set up the scales
+                var aScale = d3.scaleLinear()
+                    .domain([0, d3.max(counts, d => d.value)])
+                    .range([0, 50]);
+                var iScale = d3.scaleLinear()
+                    .domain([0, counts.length])
+                    .range([0, 50]);
+
+                var rects = element.selectAll('rect')
+                    .data(counts);
+
+                var rectsEnter = rects.enter().append('rect');
+
+                rectsEnter.attr("x", function(d, i){
+                            return iScale(i);
+                        })
+                    .attr("y", 0)
+                    .attr("height", function(d, i) {
+                        return aScale(d.value);
+                    })
+                    .attr("width",10)
+                    .style("fill", "steelblue");
+
+                rects.exit().remove();
+
+                rects = rectsEnter.merge(rects);
+            }
             // UPDATE
             var nodeUpdate = nodeEnter.merge(node);
           
@@ -140,7 +195,7 @@ class Tree{
             var linkEnter = link.enter().insert('path', "g")
                 .attr("class", "link")
                 .attr('d', function(d){
-                  var o = {y: source.y0, x: source.x0}
+                  var o = {y: source.y0, x: source.x0};
                   return diagonal(o, o)
                 });
           
@@ -156,7 +211,7 @@ class Tree{
             var linkExit = link.exit().transition()
                 .duration(duration)
                 .attr('d', function(d) {
-                    var o = {y: source.y0, x: source.x0}
+                    var o = {y: source.y0, x: source.x0};
                 //   var o = {x: source.x, y: source.y}
                   return diagonal(o, o)
                 })

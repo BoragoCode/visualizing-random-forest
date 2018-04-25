@@ -37,7 +37,7 @@ def rules(clf, features, labels, node_index=0):
     node = {}
     if clf.tree_.children_left[node_index] == -1:  # indicates leaf
         count_labels = zip(clf.tree_.value[node_index, 0], labels)
-        node['name'] = ', '.join(('{} of {}'.format(int(count), label)
+        node['name'] = ', '.join(('{} : {}'.format(label, int(count))
                                   for count, label in count_labels))
     else:
         feature = features[clf.tree_.feature[node_index]]
@@ -81,7 +81,7 @@ def testfunction(max_depth, min_samples_split, data='null', defaultdata=True):
         # print(model.estimators_[0].tree_.children_left)
         # print(model.estimators_[0].tree_.children_right)
         # print(iris.feature_names[model.estimators_[0].tree_.feature[0]])
-        # print(json.dumps(tree, indent=2, sort_keys=True))
+        print(json.dumps(tree, indent=2, sort_keys=True))
         return tree
     else:
         # data = data["data"]
@@ -91,15 +91,15 @@ def testfunction(max_depth, min_samples_split, data='null', defaultdata=True):
         # separating label data from rest of the data
         X, y = dataset.drop(target_column, axis=1), dataset[target_column]
         # fit a randomforestclassifier
-        model = RandomForestClassifier(max_depth=3, random_state=0)
+        model = RandomForestClassifier(max_depth=max_depth,
+                                       min_samples_split=min_samples_split, random_state=0)
         model.fit(X, y)
         # model.estimators_[i].tree_ gives ith tree
         tree = rules(model.estimators_[0], X.columns.values, y.unique())
-
-    if data:
-        return tree
-    else:
-        return ['data not found', ': inside tree function']
+        if data:
+            return tree
+        else:
+            return ['data not found', ': inside tree function']
 
 
 # if __name__ == '__main__':
