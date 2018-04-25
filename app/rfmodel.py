@@ -81,7 +81,7 @@ def testfunction(max_depth, min_samples_split, data='null', defaultdata=True):
         # print(model.estimators_[0].tree_.children_left)
         # print(model.estimators_[0].tree_.children_right)
         # print(iris.feature_names[model.estimators_[0].tree_.feature[0]])
-        print(json.dumps(tree, indent=2, sort_keys=True))
+        # print(json.dumps(tree, indent=2, sort_keys=True))
         return tree
     else:
         # data = data["data"]

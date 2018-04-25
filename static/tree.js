@@ -15,6 +15,12 @@ class Tree{
     create(response_data){
         // console.log('tree create function:');
         var that = this;
+        //Initialize tooltip
+        let labelTip = d3.tip().attr("class", ".d3-tip").html((d) => {
+            // console.log(d);
+            return '<span>' + d.value + '</span>' + ' samples of ' + d.key
+        });
+
         this.svg.selectAll('g').remove();
 
         that.svg.append('g')
@@ -105,6 +111,7 @@ class Tree{
                 .text(function(d) {  return d.data.name; });
 
             nodeEnter.each(function (d) {
+                // console.log("hello");
                if(!d.hasOwnProperty('children')){
                    drawLeafNode(d3.select(this), d);
                }
@@ -114,6 +121,22 @@ class Tree{
                 // console.log((d.data.name).split(',').map(s => s.split(': ')))
                 // console.log(d.data.name);
                 // console.log((d.data.name).split(','));
+                var boundbox = element.selectAll('.bbox')
+                    .data([{'key':'bbox','value':'bbox'}]);
+
+                //TODO: move css to style.css and transform to move box to left
+                boundbox.enter().append('rect')
+                    .attr('width', 75)
+                    .attr('height', 55)
+                    .attr('style', 'stroke: darkgray; stroke-width: 2px')
+                    .attr('fill', 'none')
+                    .attr('class','bbox');
+                    // .attr('transform','translate(0, )');
+
+                boundbox.exit().remove();
+
+                element.selectAll('circle').remove();
+                element.selectAll('text').remove();
 
                 var counts = [];
                 (d.data.name).split(',').forEach(function (name) {
@@ -121,7 +144,7 @@ class Tree{
                     // console.log({'key':arr[0].trim(), 'value': arr[1].trim()});
                     counts.push({'key':arr[0].trim(), 'value': arr[1].trim()});
                 });
-                console.log(counts);
+                // console.log(counts);
 
                // Set up the scales
                 var aScale = d3.scaleLinear()
@@ -131,24 +154,33 @@ class Tree{
                     .domain([0, counts.length])
                     .range([0, 50]);
 
-                var rects = element.selectAll('rect')
+                var rects = element.selectAll('labelbar')
                     .data(counts);
 
                 var rectsEnter = rects.enter().append('rect');
 
-                rectsEnter.attr("x", function(d, i){
-                            return iScale(i);
-                        })
-                    .attr("y", 0)
-                    .attr("height", function(d, i) {
+                rectsEnter
+                    .attr('id', function (d) {
+                        return d.key;
+                    })
+                    .attr("y", function(d, i){return iScale(i)+2;})
+                    .attr("x", 0)
+                    .attr("width", function(d, i) {
                         return aScale(d.value);
                     })
-                    .attr("width",10)
-                    .style("fill", "steelblue");
+                    // .attr("height",50/counts.length)
+                    .attr("height",10)
+                    // TODO: create a color scale for all labels
+                    .style("fill", "steelblue")
+                    .attr("class","labelbar");
 
                 rects.exit().remove();
 
                 rects = rectsEnter.merge(rects);
+
+                rects.call(labelTip)
+                    .on("mouseover", labelTip.show)
+                    .on("mouseout", labelTip.hide);
             }
             // UPDATE
             var nodeUpdate = nodeEnter.merge(node);

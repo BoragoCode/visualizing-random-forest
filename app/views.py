@@ -27,7 +27,7 @@ def learning():
                             min_samples_split=data["minSampleSplit"],
                             data=data["data"], defaultdata=False)
     response = json.dumps(response)
-    print(response)
+    # print(response)
     return response
 
 @app.route('/defaultdata', methods=['POST'])
@@ -36,9 +36,7 @@ def defaultdata():
     response = testfunction(max_depth=data["depth"],
                             min_samples_split=data["minSampleSplit"], defaultdata=True)
     response = json.dumps(response)
-    print(response)
+    # print(response)
     return response
-
-    # return jsonify(response)
 
 
