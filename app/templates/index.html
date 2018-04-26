@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block body %}
-<script src="/static/upload.js"></script>
 <div class="jumbotron">
     <h2>Random forest</h2>
     <div id="dvImportSegments" class="fileupload ">
@@ -34,6 +33,8 @@
 </div>
 
 <!-- Internal Scripts -->
-<script type="application/javascript" src="/static/tree.js"></script>
+<script src="/static/javascripts/upload.js"></script>
+<script src="/static/javascripts/tree.js"></script>
+<script src="/static/libraries/d3-tip.js"></script>
 
 {% endblock %}

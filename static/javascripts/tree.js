@@ -18,9 +18,15 @@ class Tree{
         //Initialize tooltip
         let labelTip = d3.tip().attr("class", ".d3-tip").html((d) => {
             // console.log(d);
-            return '<span>' + d.value + '</span>' + ' samples of ' + d.key
+            return '<span>' + d.value + '</span>' + ' sample(s) of ' + d.key
         });
 
+        var colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(d3.range(0,9));
+        var colorMap = {};
+        for(i = 0; i < window.labels.length; ++i){
+             colorMap[window.labels[i]] = i;
+        }
+        // console.log(colorMap);
         this.svg.selectAll('g').remove();
 
         that.svg.append('g')
@@ -31,7 +37,7 @@ class Tree{
         var i = 0,
         duration = 750,
         root;
- 
+
 
         // declares a tree layout and assigns the size
         var treemap = d3.tree().size([this.height, this.width]);
@@ -90,14 +96,40 @@ class Tree{
               })
               .on('click', click);
           
-            // Add Circle for the nodes
-            nodeEnter.append('circle')
+            //Add Circle for the nodes
+            // nodeEnter.append('circle')
+            //     .attr('class', 'node')
+            //     .attr('r', 1e-6)
+            //     .style("fill", function(d) {
+            //         console.log(d);
+            //         return d._children ? "lightsteelblue" : "#fff";
+            //     });
+
+            nodeEnter.append('rect')
                 .attr('class', 'node')
-                .attr('r', 1e-6)
+                .attr('width', function(d){
+                    if(!d.data.children){
+                        return 0;
+                    }
+                    return 50;
+                    // console.log(d.data.name);
+                    // console.log(window.rangeValues);
+                    // console.log(window.rangeValues[d.data.name]);
+                    //scale for defining length according to the attribute
+                    // let nScale = d3.scaleLinear()
+                    //     // .domain([window.rangeValues])
+                    //     .range([0, 50])
+                    //     .domain([window.rangeValues[d.data.name].min,
+                    //     window.rangeValues[d.data.name].max]);
+                    // let len = Math.abs(window.rangeValues[d.data.name].min -
+                    //     window.rangeValues[d.data.name].max);
+                    // return nScale(len);
+                })
+                .attr("height", 20)
                 .style("fill", function(d) {
                     return d._children ? "lightsteelblue" : "#fff";
                 });
-          
+
             // Add labels for the nodes
             nodeEnter.append('text')
                 .attr("dy", ".35em")
@@ -110,7 +142,25 @@ class Tree{
                 .attr("text-anchor", "middle")
                 .text(function(d) {  return d.data.name; });
 
-            nodeEnter.each(function (d) {
+            // UPDATE
+            var nodeUpdate = nodeEnter.merge(node);
+          
+            // Transition to the proper position for the node
+            nodeUpdate.transition()
+              .duration(duration)
+              .attr("transform", function(d) { 
+                  return "translate(" + d.x + "," + d.y + ")";
+               });
+          
+            // Update the node attributes and style
+            nodeUpdate.select('circle.node')
+              .attr('r', 10)
+              .style("fill", function(d) {
+                  return d._children ? "lightsteelblue" : "#fff";
+              })
+              .attr('cursor', 'pointer');
+          
+            nodeUpdate.each(function (d) {
                 // console.log("hello");
                if(!d.hasOwnProperty('children')){
                    drawLeafNode(d3.select(this), d);
@@ -144,12 +194,8 @@ class Tree{
                     // console.log({'key':arr[0].trim(), 'value': arr[1].trim()});
                     counts.push({'key':arr[0].trim(), 'value': arr[1].trim()});
                 });
-                // console.log(counts);
-
-               // Set up the scales
-                var aScale = d3.scaleLinear()
-                    .domain([0, d3.max(counts, d => d.value)])
-                    .range([0, 50]);
+                // console.log(d);
+               // Set up the scale
                 var iScale = d3.scaleLinear()
                     .domain([0, counts.length])
                     .range([0, 50]);
@@ -166,41 +212,32 @@ class Tree{
                     .attr("y", function(d, i){return iScale(i)+2;})
                     .attr("x", 0)
                     .attr("width", function(d, i) {
+                    var aScale = d3.scaleLinear()
+                        .range([0, 70])
+                        .domain([0, window.labelCount[d.key]]);
                         return aScale(d.value);
                     })
                     // .attr("height",50/counts.length)
-                    .attr("height",10)
+                    .attr("height",7)
                     // TODO: create a color scale for all labels
-                    .style("fill", "steelblue")
+                    .style("fill", function (d) {
+                        return colorScale(colorMap[d.key]);
+                    })
                     .attr("class","labelbar");
 
                 rects.exit().remove();
 
                 rects = rectsEnter.merge(rects);
 
+                rects.filter(function(d) { return d.value === "0"; }).remove();
+
                 rects.call(labelTip)
                     .on("mouseover", labelTip.show)
                     .on("mouseout", labelTip.hide);
             }
-            // UPDATE
-            var nodeUpdate = nodeEnter.merge(node);
-          
-            // Transition to the proper position for the node
-            nodeUpdate.transition()
-              .duration(duration)
-              .attr("transform", function(d) { 
-                  return "translate(" + d.x + "," + d.y + ")";
-               });
-          
-            // Update the node attributes and style
-            nodeUpdate.select('circle.node')
-              .attr('r', 10)
-              .style("fill", function(d) {
-                  return d._children ? "lightsteelblue" : "#fff";
-              })
-              .attr('cursor', 'pointer');
-          
-          
+
+
+
             // Remove any exiting nodes
             var nodeExit = node.exit().transition()
                 .duration(duration)

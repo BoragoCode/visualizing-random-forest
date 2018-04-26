@@ -42,7 +42,8 @@ def rules(clf, features, labels, node_index=0):
     else:
         feature = features[clf.tree_.feature[node_index]]
         threshold = clf.tree_.threshold[node_index]
-        node['name'] = '{} > {}'.format(feature, threshold)
+        node['name'] = feature
+        node['rule'] = '{} > {}'.format(feature, threshold)
         left_index = clf.tree_.children_left[node_index]
         right_index = clf.tree_.children_right[node_index]
         node['children'] = [rules(clf, features, labels, right_index),
