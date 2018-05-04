@@ -22,6 +22,32 @@ def datapreprocessing(dataset):
     return dataset
 
 
+def aggregateTree(tree, features, labels, agg, node_index=0):
+    if tree.children_left[node_index] == -1:  # indicates leaf
+        agg['leaf'] = agg.get('leaf', 0) + 1
+        return agg
+    else:
+        feature = features[tree.feature[node_index]]
+        threshold = tree.threshold[node_index]
+        agg['features'] = agg.get('features', {})
+        agg['features'][feature] = agg['features'].get(feature, 0) + 1
+        left_index = tree.children_left[node_index]
+        right_index = tree.children_right[node_index]
+        children = agg.get('children', [{}, {}])
+        agg['children'] = [aggregateTree(tree, features, labels, children[0], right_index),
+                           aggregateTree(tree, features, labels, children[1], left_index)]
+    return agg
+
+def aggregateTrees(trees, features, labels):
+    agg = {}
+    for tree in trees:
+        agg = aggregateTree(tree, features, labels, agg)
+    return agg
+
+
+
+
+
 def rules(clf, features, labels, node_index=0):
     """Structure of rules in a fit decision tree classifier
 
@@ -41,21 +67,25 @@ def rules(clf, features, labels, node_index=0):
         node['name'] = ', '.join(('{} : {}'.format(label, int(count))
                                   for count, label in count_labels))
         node['leafCounts'] = list(zip(labels, clf.tree_.value[node_index, 0]))
+        node['isLeaf'] = True
 
     else:
         feature = features[clf.tree_.feature[node_index]]
         threshold = clf.tree_.threshold[node_index]
         node['name'] = feature
-        node['rule'] = '{} > {}'.format(feature, threshold)
+        # node['rule'] = '{} > {}'.format(feature, threshold)
+        # node['rule'] = {feature: threshold}
+        node['rule'] = [feature, threshold]
         left_index = clf.tree_.children_left[node_index]
         right_index = clf.tree_.children_right[node_index]
         node['children'] = [rules(clf, features, labels, right_index),
                             rules(clf, features, labels, left_index)]
+        node['isLeaf'] = False
     return node
 
 
 # if default data then load iris
-def testfunction(max_depth, min_samples_split, data='null', defaultdata=True):
+def treefunction(max_depth, min_samples_split, data='null', defaultdata=True):
     # if max_depth:
     if max_depth != "":
         max_depth = int(max_depth)  # parse value
@@ -86,6 +116,8 @@ def testfunction(max_depth, min_samples_split, data='null', defaultdata=True):
         # print(model.estimators_[0].tree_.children_right)
         # print(iris.feature_names[model.estimators_[0].tree_.feature[0]])
         # print(json.dumps(tree, indent=2, sort_keys=True))
+        agg_tree = aggregateTrees([e.tree_ for e in model.estimators_], iris.feature_names, iris.target_names)
+        # print(json.dumps(agg_tree, indent=2))
         return tree
     else:
         # data = data["data"]

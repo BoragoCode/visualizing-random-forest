@@ -21,6 +21,11 @@ class Tree{
             return '<span>' + d[1] + '</span>' + ' sample(s) of ' + d[0]
         });
 
+        let ruleTip = d3.tip().attr("class", ".d3-tip").html((d) => {
+            // console.log(d.data.rule[1]);
+            return d.data.rule[1];
+        });
+
         let colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(d3.range(0,9));
         let colorMap = {};
         for(i = 0; i < window.labels.length; ++i){
@@ -123,6 +128,11 @@ class Tree{
 
 
             function drawSplitNode(element, d){
+                let ruleScale = d3.scaleLinear()
+                    .range([0, splitNodeWidth])
+                    .domain([window.rangeValues[d.data.name].min,
+                    window.rangeValues[d.data.name].max]);
+
                 element.selectAll('rect').remove();
                 element.selectAll('text').remove();
 
@@ -134,18 +144,32 @@ class Tree{
                         return d._children ? "lightsteelblue" : "#fff";
                     });
 
+                element.append('rect')
+                    .attr('class', 'rule')
+                    .attr('width', 1)
+                    .attr("height", 20)
+                    .attr('x', function (d) {
+                        // console.log( ruleScale(d.data.rule[1]) );
+                        // console.log( ruleScale(window.rangeValues[d.data.name].max) );
+                        return ruleScale(d.data.rule[1]);
+                    })
+                    .call(ruleTip)
+                        .on("mouseover", ruleTip.show)
+                        .on("mouseout", ruleTip.hide);
+
+                // Add rule labels for the nodes
+                element.append('text')
+                    .attr("text-anchor", "middle")
+                    .text(function(d) {  return d.data.rule[1].toFixed(4); });
+
                 // Add labels for the nodes
                 element.append('text')
-                    .attr("dy", ".35em")
+                    .attr("dy", ".15em")
                     .attr("y", function(d) {
                         return d.children || d._children ? -13 : 13;
                     })
                     .attr("text-anchor", "middle")
-                    .text(function(d) {  return d.data.name; })
-                    .attr("transform", function(d) {
-                       // console.log(d);
-                       return "translate(" + ((splitNodeWidth/3.5)) + "," + 0 + ")";
-                    });
+                    .text(function(d) {  return d.data.name; });
 
                 // Transition to the proper position for the node
                 element.transition()

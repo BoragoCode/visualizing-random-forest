@@ -6,7 +6,7 @@ from app import app
 from flask import request, redirect, url_for
 from werkzeug.utils import secure_filename
 
-from app.rfmodel import testfunction
+from app.rfmodel import treefunction
 
 @app.route('/')
 def index():
@@ -23,7 +23,7 @@ def learning():
     # request.get_data()
     data = json.loads(request.data)
     # print(data)
-    response = testfunction(max_depth=data["depth"],
+    response = treefunction(max_depth=data["depth"],
                             min_samples_split=data["minSampleSplit"],
                             data=data["data"], defaultdata=False)
     response = json.dumps(response)
@@ -33,7 +33,7 @@ def learning():
 @app.route('/defaultdata', methods=['POST'])
 def defaultdata():
     data = json.loads(request.data)
-    response = testfunction(max_depth=data["depth"],
+    response = treefunction(max_depth=data["depth"],
                             min_samples_split=data["minSampleSplit"], defaultdata=True)
     response = json.dumps(response)
     # print(response)
