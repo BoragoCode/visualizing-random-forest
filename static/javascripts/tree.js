@@ -18,11 +18,11 @@ class Tree{
         //Initialize tooltip
         let labelTip = d3.tip().attr("class", ".d3-tip").html((d) => {
             // console.log(d);
-            return '<span>' + d.value + '</span>' + ' sample(s) of ' + d.key
+            return '<span>' + d[1] + '</span>' + ' sample(s) of ' + d[0]
         });
 
-        var colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(d3.range(0,9));
-        var colorMap = {};
+        let colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(d3.range(0,9));
+        let colorMap = {};
         for(i = 0; i < window.labels.length; ++i){
              colorMap[window.labels[i]] = i;
         }
@@ -32,6 +32,17 @@ class Tree{
         that.svg.append('g')
         .attr("transform", "translate("+ 0 + "," + this.margin.top *2  + ")");
 
+        // leafHorizontalScale
+        let leafWidth = 70;
+        let maxLeafCount = 0;
+        maxLeafCount = Object.values(window.labelCount)
+            .reduce((a, b) => window.labelCount[a] > window.labelCount[b] ? a : b);
+
+        let leafHorizontalScale = d3.scaleLinear()
+          .range([0, leafWidth])
+          .domain([0, maxLeafCount]);
+         let splitNodeWidth = 50;
+
         var treeData = JSON.parse( response_data );
         // console.log(root);
         var i = 0,
@@ -40,7 +51,7 @@ class Tree{
 
 
         // declares a tree layout and assigns the size
-        var treemap = d3.tree().size([this.height, this.width]);
+        let treemap = d3.tree().size([this.height, this.width]);
         
         // Assigns parent, children, height, depth
         root = d3.hierarchy(treeData, function(d) { return d.children; });
@@ -78,7 +89,7 @@ class Tree{
             // Normalize for fixed-depth.
             nodes.forEach(function(d){ d.y = d.depth * 100});
           
-            // ****************** Nodes section ***************************
+            // ****************** Nodes section ***************************//
           
             // Update the nodes...
             var node = that.svg.selectAll('g.node')
@@ -95,23 +106,55 @@ class Tree{
                   return "translate(" + source.x0 + "," + source.y0 + ")";
               })
               .on('click', click);
-          
-            //Add Circle for the nodes
-            // nodeEnter.append('circle')
-            //     .attr('class', 'node')
-            //     .attr('r', 1e-6)
-            //     .style("fill", function(d) {
-            //         console.log(d);
-            //         return d._children ? "lightsteelblue" : "#fff";
-            //     });
 
-            nodeEnter.append('rect')
-                .attr('class', 'node')
-                .attr('width', function(d){
-                    if(!d.data.children){
-                        return 0;
-                    }
-                    return 50;
+             // UPDATE
+            var nodeUpdate = nodeEnter.merge(node);
+
+
+            nodeUpdate.each(function (d) {
+                // console.log("hello");
+               if(!d.hasOwnProperty('children')){
+                   drawLeafNode(d3.select(this), d);
+               }
+               else {
+                   drawSplitNode(d3.select(this), d);
+               }
+            });
+
+
+            function drawSplitNode(element, d){
+                element.selectAll('rect').remove();
+                element.selectAll('text').remove();
+
+                element.append('rect')
+                    .attr('class', 'node')
+                    .attr('width', splitNodeWidth)
+                    .attr("height", 20)
+                    .style("fill", function(d) {
+                        return d._children ? "lightsteelblue" : "#fff";
+                    });
+
+                // Add labels for the nodes
+                element.append('text')
+                    .attr("dy", ".35em")
+                    .attr("y", function(d) {
+                        return d.children || d._children ? -13 : 13;
+                    })
+                    .attr("text-anchor", "middle")
+                    .text(function(d) {  return d.data.name; })
+                    .attr("transform", function(d) {
+                       // console.log(d);
+                       return "translate(" + ((splitNodeWidth/3.5)) + "," + 0 + ")";
+                    });
+
+                // Transition to the proper position for the node
+                element.transition()
+                  .duration(duration)
+                  .attr("transform", function(d) {
+                      // console.log(d);
+                      return "translate(" + (d.x - (splitNodeWidth/2))+ "," + d.y + ")";
+                   });
+                    // comment block -1
                     // console.log(d.data.name);
                     // console.log(window.rangeValues);
                     // console.log(window.rangeValues[d.data.name]);
@@ -124,53 +167,10 @@ class Tree{
                     // let len = Math.abs(window.rangeValues[d.data.name].min -
                     //     window.rangeValues[d.data.name].max);
                     // return nScale(len);
-                })
-                .attr("height", 20)
-                .style("fill", function(d) {
-                    return d._children ? "lightsteelblue" : "#fff";
-                });
+            }
 
-            // Add labels for the nodes
-            nodeEnter.append('text')
-                .attr("dy", ".35em")
-                .attr("y", function(d) {
-                    return d.children || d._children ? -13 : 13;
-                })
-                // .attr("text-anchor", function(d) {
-                //     return d.children || d._children ? "end" : "start";
-                // })
-                .attr("text-anchor", "middle")
-                .text(function(d) {  return d.data.name; });
-
-            // UPDATE
-            var nodeUpdate = nodeEnter.merge(node);
-          
-            // Transition to the proper position for the node
-            nodeUpdate.transition()
-              .duration(duration)
-              .attr("transform", function(d) { 
-                  return "translate(" + d.x + "," + d.y + ")";
-               });
-          
-            // Update the node attributes and style
-            nodeUpdate.select('circle.node')
-              .attr('r', 10)
-              .style("fill", function(d) {
-                  return d._children ? "lightsteelblue" : "#fff";
-              })
-              .attr('cursor', 'pointer');
-          
-            nodeUpdate.each(function (d) {
-                // console.log("hello");
-               if(!d.hasOwnProperty('children')){
-                   drawLeafNode(d3.select(this), d);
-               }
-            });
 
             function drawLeafNode(element, d){
-                // console.log((d.data.name).split(',').map(s => s.split(': ')))
-                // console.log(d.data.name);
-                // console.log((d.data.name).split(','));
                 var boundbox = element.selectAll('.bbox')
                     .data([{'key':'bbox','value':'bbox'}]);
 
@@ -185,43 +185,36 @@ class Tree{
 
                 boundbox.exit().remove();
 
-                element.selectAll('circle').remove();
+                // element.selectAll('circle').remove();
                 element.selectAll('text').remove();
 
-                var counts = [];
-                (d.data.name).split(',').forEach(function (name) {
-                    var arr = name.trim().split(':');
-                    // console.log({'key':arr[0].trim(), 'value': arr[1].trim()});
-                    counts.push({'key':arr[0].trim(), 'value': arr[1].trim()});
-                });
+               // Set up the scale - different for each leaf node
+                // sets position of each rect in leaf node
                 // console.log(d);
-               // Set up the scale
-                var iScale = d3.scaleLinear()
-                    .domain([0, counts.length])
+                var positionScale = d3.scaleLinear()
+                    .domain([0, d.data.leafCounts.length])
                     .range([0, 50]);
 
                 var rects = element.selectAll('labelbar')
-                    .data(counts);
+                    .data(d.data.leafCounts);
 
                 var rectsEnter = rects.enter().append('rect');
 
+                // console.log(d);
                 rectsEnter
                     .attr('id', function (d) {
-                        return d.key;
+                        return d[0];
                     })
-                    .attr("y", function(d, i){return iScale(i)+2;})
+                    .attr("y", function(d, i){return (positionScale(i)+3);})
                     .attr("x", 0)
                     .attr("width", function(d, i) {
-                    var aScale = d3.scaleLinear()
-                        .range([0, 70])
-                        .domain([0, window.labelCount[d.key]]);
-                        return aScale(d.value);
+                        return leafHorizontalScale(d[1]);
                     })
                     // .attr("height",50/counts.length)
                     .attr("height",7)
                     // TODO: create a color scale for all labels
                     .style("fill", function (d) {
-                        return colorScale(colorMap[d.key]);
+                        return colorScale(colorMap[d[0]]);
                     })
                     .attr("class","labelbar");
 
@@ -234,6 +227,14 @@ class Tree{
                 rects.call(labelTip)
                     .on("mouseover", labelTip.show)
                     .on("mouseout", labelTip.hide);
+
+                // Transition to the proper position for the node
+                element.transition()
+                  .duration(duration)
+                  .attr("transform", function(d) {
+                      // console.log(d);
+                      return "translate(" + (d.x - (leafWidth/3.5)) + "," + d.y + ")";
+                   });
             }
 
 
@@ -247,8 +248,8 @@ class Tree{
                 .remove();
           
             // On exit reduce the node circles size to 0
-            nodeExit.select('circle')
-              .attr('r', 1e-6);
+            // nodeExit.select('circle')
+            //   .attr('r', 1e-6);
           
             // On exit reduce the opacity of text labels
             nodeExit.select('text')

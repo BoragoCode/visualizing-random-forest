@@ -37,8 +37,11 @@ def rules(clf, features, labels, node_index=0):
     node = {}
     if clf.tree_.children_left[node_index] == -1:  # indicates leaf
         count_labels = zip(clf.tree_.value[node_index, 0], labels)
+        # name is just an identifier for tree layout in js not being used any where
         node['name'] = ', '.join(('{} : {}'.format(label, int(count))
                                   for count, label in count_labels))
+        node['leafCounts'] = list(zip(labels, clf.tree_.value[node_index, 0]))
+
     else:
         feature = features[clf.tree_.feature[node_index]]
         threshold = clf.tree_.threshold[node_index]
