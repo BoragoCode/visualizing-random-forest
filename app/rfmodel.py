@@ -24,13 +24,25 @@ def datapreprocessing(dataset):
 
 def aggregateTree(tree, features, labels, agg, node_index=0):
     if tree.children_left[node_index] == -1:  # indicates leaf
-        agg['leaf'] = agg.get('leaf', 0) + 1
-        return agg
+        # agg['leaf'] = agg.get('leaf', 0) + 1
+        agg['name'] = agg.get('name', {})
+        agg['name']['leaf'] = agg['name'].get('leaf', 0) + 1
+        # to avoid setting the flag when it was set to true before
+        if agg.get('isLeaf', False):
+            agg['isLeaf'] = True
+        else:
+            agg['isLeaf'] = False
+
     else:
         feature = features[tree.feature[node_index]]
         threshold = tree.threshold[node_index]
-        agg['features'] = agg.get('features', {})
-        agg['features'][feature] = agg['features'].get(feature, 0) + 1
+        agg['name'] = agg.get('name', {})
+        agg['name'][feature] = agg['name'].get(feature, 0) + 1
+        # to avoid setting the flag when it was set to true before
+        if agg.get('isLeaf', False):
+            agg['isLeaf'] = True
+        else:
+            agg['isLeaf'] = False
         left_index = tree.children_left[node_index]
         right_index = tree.children_right[node_index]
         children = agg.get('children', [{}, {}])
@@ -76,11 +88,11 @@ def rules(clf, features, labels, node_index=0):
         # node['rule'] = '{} > {}'.format(feature, threshold)
         # node['rule'] = {feature: threshold}
         node['rule'] = [feature, threshold]
+        node['isLeaf'] = False
         left_index = clf.tree_.children_left[node_index]
         right_index = clf.tree_.children_right[node_index]
         node['children'] = [rules(clf, features, labels, right_index),
                             rules(clf, features, labels, left_index)]
-        node['isLeaf'] = False
     return node
 
 
@@ -112,12 +124,16 @@ def treefunction(max_depth, min_samples_split, data='null', defaultdata=True):
         # print(json.dumps(tree_list, indent=2, sort_keys=True))
         # print(tree_list)
         # print(model.estimators_[0].tree_)
-        # print(model.estimators_[0].tree_.children_left)
-        # print(model.estimators_[0].tree_.children_right)
+        print(model.estimators_[0].tree_.children_left)
+        # print(model.estimators_[0].tree_.children_left[1])
+        print(model.estimators_[0].tree_.children_right)
+        print(model.estimators_[0].tree_.feature)
         # print(iris.feature_names[model.estimators_[0].tree_.feature[0]])
         # print(json.dumps(tree, indent=2, sort_keys=True))
         agg_tree = aggregateTrees([e.tree_ for e in model.estimators_], iris.feature_names, iris.target_names)
-        # print(json.dumps(agg_tree, indent=2))
+        print(json.dumps(agg_tree, indent=2))
+        # print("----tree----")
+        # print(json.dumps(tree, indent=2))
         return tree
     else:
         # data = data["data"]
@@ -138,5 +154,36 @@ def treefunction(max_depth, min_samples_split, data='null', defaultdata=True):
             return ['data not found', ': inside tree function']
 
 
-# if __name__ == '__main__':
-#     testfunction(defaultdata=True)
+# if default data then load iris
+def aggr_treefunction(max_depth, min_samples_split, n_estimators, data='null', defaultdata=True):
+    # if max_depth:
+    if max_depth != "":
+        max_depth = int(max_depth)  # parse value
+    else:
+        max_depth = None
+    if min_samples_split != "":
+        min_samples_split = int(min_samples_split)  # parse value
+    else:
+        min_samples_split = 2  # default value
+    if n_estimators != "":
+        n_estimators = int(n_estimators)  # parse value
+    else:
+        n_estimators = 10  # default value
+
+    if defaultdata:
+        iris = load_iris()
+        X, y = iris.data, iris.target
+        model = RandomForestClassifier(max_depth=max_depth,
+                                       min_samples_split=min_samples_split, random_state=0, n_estimators=n_estimators)
+        model.fit(X, y)
+        # TODO: aggregate the trees such that features and respective occurance at each level is recorded
+        # model.estimators_: list of sk learn decision trees
+        agg_tree = aggregateTrees([e.tree_ for e in model.estimators_], iris.feature_names, iris.target_names)
+        print("----tree----")
+        # print(json.dumps(agg_tree, indent=2))
+        return agg_tree
+    else: return 1
+
+
+if __name__ == '__main__':
+    treefunction(defaultdata=True, max_depth="", min_samples_split="")

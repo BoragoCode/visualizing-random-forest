@@ -10,6 +10,10 @@ $(document).ready(function() {
         let depth = $("#depthVal").val();
         let minSampleSplit = $("#minSampleSplit").val();
         let params = {"depth": depth, "minSampleSplit": minSampleSplit};
+        let n_estimators = $("#n_estimators");
+        if(n_estimators.length){
+            params["n_estimators"] = n_estimators.val();
+        }
         if($("#txtFileUpload").prop('files')[0]){
             let file = $("#txtFileUpload").prop('files')[0];
             upload(file, params);

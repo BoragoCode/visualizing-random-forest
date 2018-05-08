@@ -26,7 +26,7 @@ class Tree{
             return d.data.rule[1];
         });
 
-        let colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(d3.range(0,9));
+        let colorScale = d3.scaleOrdinal(d3.schemeCategory20).domain(d3.range(0,19));
         let colorMap = {};
         for(i = 0; i < window.labels.length; ++i){
              colorMap[window.labels[i]] = i;
@@ -47,6 +47,10 @@ class Tree{
           .range([0, leafWidth])
           .domain([0, maxLeafCount]);
          let splitNodeWidth = 50;
+
+        // set inner node rectangles height and width
+        let inner_rect_height = 14;
+        let inner_rect_width = 22;
 
         var treeData = JSON.parse( response_data );
         // console.log(root);
@@ -92,8 +96,8 @@ class Tree{
                 links = treeData.descendants().slice(1);
           
             // Normalize for fixed-depth.
-            nodes.forEach(function(d){ d.y = d.depth * 100});
-          
+            nodes.forEach(function(d){ d.y = d.depth * 75});
+
             // ****************** Nodes section ***************************//
           
             // Update the nodes...
@@ -124,7 +128,7 @@ class Tree{
             nodeUpdate.each(function (d) {
                 // console.log("hello");
                if(!d.hasOwnProperty('children')){
-                   drawLeafNode(d3.select(this), d);
+                   // drawLeafNode(d3.select(this), d);
                }
                else {
                    drawSplitNode(d3.select(this), d);
@@ -133,71 +137,60 @@ class Tree{
 
 
             function drawSplitNode(element, d){
-                let ruleScale = d3.scaleLinear()
-                    .range([0, splitNodeWidth])
-                    .domain([window.rangeValues[d.data.name].min,
-                    window.rangeValues[d.data.name].max]);
 
                 element.selectAll('rect').remove();
                 element.selectAll('text').remove();
 
+/*
                 element.append('rect')
                     .attr('class', 'node')
                     .attr('width', splitNodeWidth)
                     .attr("height", 20)
                     .style("fill", function(d) {
-                        // console.log(d);
+                        console.log(d);
                         return d._children ? "lightsteelblue" : "#fff";
                     });
+*/
+                let keys_length = Object.keys(d.data.name).length;
 
-                element.append('rect')
-                    .attr('class', 'rule')
-                    .attr('width', 1)
-                    .attr("height", 20)
-                    .attr('x', function (d) {
-                        // console.log( ruleScale(d.data.rule[1]) );
-                        // console.log( ruleScale(window.rangeValues[d.data.name].max) );
-                        return ruleScale(d.data.rule[1]);
+                let frects = element.selectAll('innernode')
+                    .data(function(d){
+                        // return [i, keys[i], frequency, keys.length];
+                         return Object.entries(d.data.name)
                     });
-                    // .call(ruleTip)
-                    //     .on("mouseover", ruleTip.show)
-                    //     .on("mouseout", ruleTip.hide);
 
-                // Add rule labels for the nodes
-                element.append('text')
-                    .attr("dx", "-2em")
-                    .attr("text-anchor", "middle")
-                    .text(function(d) {  return d.data.rule[1].toFixed(4); });
+                let frectsEnter = frects.enter().append('rect');
 
-                // Add labels for the nodes
-                element.append('text')
-                    .attr("dy", ".15em")
-                    .attr("y", function(d) {
-                        return d.children || d._children ? -13 : 13;
-                    })
-                    .attr("text-anchor", "middle")
-                    .text(function(d) {  return d.data.name; });
+                frectsEnter
+                    .attr("width", inner_rect_width)
+                    .attr("height", inner_rect_height)
+                    // TODO: create a color scale for all features
+                    // .style("fill", function (d) {
+                    //     return colorScale(colorMap[d[0]]);
+                    // })
+                    .attr("class","innernode")
+                    .attr("transform", function(d,i) {
+                        console.log(d);
+                        if (i > (keys_length/2)){
+                            return "translate(" +
+                                (inner_rect_width*((i-keys_length/2) - (keys_length/3.5))) + "," +
+                                inner_rect_height + ")";
+                        }
+                        return "translate(" + inner_rect_width*(i - (keys_length/3.5)) + ")";
+                    });
+
+                frects.exit().remove();
+
+                frects = frectsEnter.merge(frects);
+
 
                 // Transition to the proper position for the node
                 element.transition()
                   .duration(duration)
                   .attr("transform", function(d) {
-                      // console.log(d);
-                      return "translate(" + (d.x - (splitNodeWidth/2))+ "," + d.y + ")";
+                      return "translate(" + d.x + "," + d.y + ")";
                    });
-                    // comment block -1
-                    // console.log(d.data.name);
-                    // console.log(window.rangeValues);
-                    // console.log(window.rangeValues[d.data.name]);
-                    //scale for defining length according to the attribute
-                    // let nScale = d3.scaleLinear()
-                    //     // .domain([window.rangeValues])
-                    //     .range([0, 50])
-                    //     .domain([window.rangeValues[d.data.name].min,
-                    //     window.rangeValues[d.data.name].max]);
-                    // let len = Math.abs(window.rangeValues[d.data.name].min -
-                    //     window.rangeValues[d.data.name].max);
-                    // return nScale(len);
+
             }
 
 

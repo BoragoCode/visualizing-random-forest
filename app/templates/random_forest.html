@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Decision tree{% endblock %}
+{% block title %}Home{% endblock %}
 {% block body %}
 <div class="jumbotron">
-    <h2>Decision tree</h2>
+    <h2>Random forest</h2>
     <div id="dvImportSegments" class="fileupload ">
     <fieldset>
         <legend>Upload your CSV File</legend>
@@ -24,6 +24,11 @@
         <div class="input-group-addon">min-samples-split</div>
         <input type="number" min = 2 id = "minSampleSplit" class="form-control" placeholder="Default">
       </div>
+      <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3">
+        <div class="input-group-addon">no of trees</div>
+        <input type="number" min = 1 id = "n_estimators" class="form-control" placeholder="Default (10)">
+      </div>
+
       <button type="button" id = "submitParams" class="btn btn-default">Submit</button>
     </form>
 
@@ -34,7 +39,7 @@
 
 <!-- Internal Scripts -->
 <script src="/static/javascripts/upload.js"></script>
-<script src="/static/javascripts/tree.js"></script>
+<script src="/static/javascripts/aggr_tree.js"></script>
 <script src="/static/libraries/d3-tip.js"></script>
 
 {% endblock %}
