@@ -1,8 +1,8 @@
 class Tree{
     constructor(){
         this.margin = {top: 20, right: 120, bottom: 20, left: 120};
-        this.width = 960 - this.margin.right - this.margin.left;
-        this.height = 960 - this.margin.top - this.margin.bottom;
+        this.width = 1500 - this.margin.right - this.margin.left;
+        this.height = 1400 - this.margin.top - this.margin.bottom;
 
         this.svg = d3.select("#nodeLink").select("#canvas")
         .attr("width", this.width + this.margin.right + this.margin.left)
@@ -12,13 +12,59 @@ class Tree{
         // .attr("transform", "translate("+ this.margin.left + "," + this.margin.top + ")");
     }
 
-    create(response_data){
+    create(response){
         // console.log('tree create function:');
-        var that = this;
+        let response_data = JSON.parse( response );
+
+        let that = this;
+        // tree data
+        let treeData = response_data[0];
+        // tree data
+        let accuracyData = response_data[1];
+        let accuracy=[];
+        let varImpData = [];
+        for(let item in accuracyData){
+            // this condition is required to prevent moving forward to prototype chain
+            if(accuracyData.hasOwnProperty(item)){
+                if(item === 'cv_accuracy'){
+                    accuracy= 'accuracy(3-fold-cv): '+accuracyData[item].toFixed(10);
+                     document.getElementById("accuracy").innerHTML = accuracy;
+                }
+                else{
+                    varImpData.push(item+': '+accuracyData[item].toFixed(6));
+                }
+            }
+        }
+
+        // accuracy data
+        let varImpList = d3.select("#varImp").selectAll("li").data(varImpData);
+
+
+        //enter selection
+        let varImpEnter = varImpList.enter()
+            .append("li")
+            .text(function(d){
+                return d;
+            });
+        //exit selection
+        varImpList.exit()
+            .remove();
+        //merge
+        varImpList = varImpEnter.merge(varImpList);
+        //update
+        varImpList
+            .text(function(d){
+                return d;
+            });
+
+
+
+
         //Initialize tooltip
-        let labelTip = d3.tip().attr("class", ".d3-tip").html((d) => {
+
+        let labelTip = d3.tip().attr("class", "d3-tip-node").html((d) => {
             // console.log(d);
-            return '<span>' + d[1] + '</span>' + ' sample(s) of ' + d[0]
+            return d[0] + ' has appeared at this position in ' + d[1] + ' trees';
         });
 
         let ruleTip = d3.tip().attr("class", ".d3-tip").html((d) => {
@@ -26,11 +72,49 @@ class Tree{
             return d.data.rule[1];
         });
 
-        let colorScale = d3.scaleOrdinal(d3.schemeCategory20).domain(d3.range(0,19));
-        let colorMap = {};
-        for(i = 0; i < window.labels.length; ++i){
-             colorMap[window.labels[i]] = i;
-        }
+        // console.log(Object.keys(window.rangeValues));
+
+        let d3_schemeCategory20 = [
+                                  "#1f77b4", "#aec7e8",
+                                  "#ff7f0e", "#ffbb78",
+                                  "#2ca02c", "#98df8a",
+                                  "#d62728", "#ff9896",
+                                  "#9467bd", "#c5b0d5",
+                                  "#8c564b", "#c49c94",
+                                  "#e377c2", "#f7b6d2",
+                                  "#7f7f7f", "#c7c7c7",
+                                  "#bcbd22", "#dbdb8d",
+                                  "#17becf", "#9edae5"
+                                ];
+        let features = Object.keys(window.rangeValues);
+
+        features.push("leaf");
+
+        let colorScale = d3.scaleOrdinal()
+              // .range([ "rgb(153, 107, 195)", "rgb(56, 106, 197)", "rgb(93, 199, 76)", "rgb(223, 199, 31)", "rgb(234, 118, 47)"])
+          .range(d3_schemeCategory20)
+          .domain(features);
+
+        let legendsvg = d3.select("svg")
+            .attr("height",25 * features.length);
+
+        legendsvg.append("g")
+          .attr("class", "legendOrdinal")
+          .attr("transform", "translate(20,10)");
+
+        let legendOrdinal = d3.legendColor()
+          .shape("path", d3.symbol().type(d3.symbolSquare).size(150)())
+          .shapePadding(10)
+          .scale(colorScale);
+
+        legendsvg.select(".legendOrdinal")
+          .call(legendOrdinal);
+
+        // let colorScale = d3.scaleOrdinal(d3.schemeCategory20).domain(d3.range(0,19));
+        // let colorMap = {};
+        // for(i = 0; i < window.labels.length; ++i){
+        //      colorMap[window.labels[i]] = i;
+        // }
         // console.log(colorMap);
         this.svg.selectAll('g').remove();
 
@@ -43,24 +127,19 @@ class Tree{
         maxLeafCount = Object.values(window.labelCount)
             .reduce((a, b) => window.labelCount[a] > window.labelCount[b] ? a : b);
 
-        let leafHorizontalScale = d3.scaleLinear()
-          .range([0, leafWidth])
-          .domain([0, maxLeafCount]);
-         let splitNodeWidth = 50;
-
         // set inner node rectangles height and width
         let inner_rect_height = 14;
-        let inner_rect_width = 22;
+        let inner_rect_width = 18;
 
-        var treeData = JSON.parse( response_data );
         // console.log(root);
-        var i = 0,
+        let i = 0,
         duration = 750,
         root;
 
 
         // declares a tree layout and assigns the size
-        let treemap = d3.tree().size([this.height, this.width]);
+        let treemap = d3.tree().size([this.height, this.width])
+                .separation(function(a, b) { return (a.parent === b.parent ? 2 : 2); });
         
         // Assigns parent, children, height, depth
         root = d3.hierarchy(treeData, function(d) { return d.children; });
@@ -89,19 +168,21 @@ class Tree{
         function update(source) {
 
             // Assigns the x and y position for the nodes
-            var treeData = treemap(root);
+            let treeData = treemap(root);
           
             // Compute the new tree layout.
-            var nodes = treeData.descendants(),
+            let nodes = treeData.descendants(),
                 links = treeData.descendants().slice(1);
           
             // Normalize for fixed-depth.
-            nodes.forEach(function(d){ d.y = d.depth * 75});
+            nodes.forEach(function(d){
+                d.y = d.depth * 75;
+            });
 
             // ****************** Nodes section ***************************//
           
             // Update the nodes...
-            var node = that.svg.selectAll('g.node')
+            let node = that.svg.selectAll('g.node')
                 .data(nodes, function(d) {
                     // console.log(d);
                     // console.log(d.hasOwnProperty('children'));
@@ -109,9 +190,10 @@ class Tree{
                 });
           
             // Enter any new modes at the parent's previous position.
-            var nodeEnter = node.enter().append('g')
+            let nodeEnter = node.enter().append('g')
                 .attr('class', 'node')
                 .attr("transform", function(d) {
+                        // console.log(d);
                   return "translate(" + source.x0 + "," + source.y0 + ")";
               })
               .on('click', function (d) {
@@ -122,13 +204,13 @@ class Tree{
               });
 
              // UPDATE
-            var nodeUpdate = nodeEnter.merge(node);
+            let nodeUpdate = nodeEnter.merge(node);
 
 
             nodeUpdate.each(function (d) {
                 // console.log("hello");
                if(!d.hasOwnProperty('children')){
-                   // drawLeafNode(d3.select(this), d);
+                   drawLeafNode(d3.select(this), d);
                }
                else {
                    drawSplitNode(d3.select(this), d);
@@ -159,18 +241,39 @@ class Tree{
                          return Object.entries(d.data.name)
                     });
 
-                let frectsEnter = frects.enter().append('rect');
+                let frectsEnter = frects.enter().append('g')
+                                .attr('class', 'innernode');
 
-                frectsEnter
+                frects = frectsEnter.merge(frects);
+
+                frects.exit().remove();
+
+                frects.append('rect')
                     .attr("width", inner_rect_width)
                     .attr("height", inner_rect_height)
                     // TODO: create a color scale for all features
-                    // .style("fill", function (d) {
-                    //     return colorScale(colorMap[d[0]]);
-                    // })
-                    .attr("class","innernode")
-                    .attr("transform", function(d,i) {
-                        console.log(d);
+                    .style("fill", function (d) {
+                        return colorScale([d[0]]);
+                    })
+                    .call(labelTip)
+                        .on("mouseover", labelTip.show)
+                        .on("mouseout", labelTip.hide);
+
+                    // .style("fill", function(d) {
+                    //     console.log(d);
+                    //     return d._children ? "diagonal-stripe-1" : "#fff";
+                    // });
+
+                // Add  count for the nodes
+                frects.append('text')
+                    // .attr("dx", "2em")
+                    // .attr("dy", "2em")
+                    .attr("text-anchor", "middle")
+                    .text(function(d) {  return d[1]; })
+                    .attr('transform','translate(5, 10)');
+
+                frects.attr("transform", function(d,i) {
+                        // console.log(d);
                         if (i > (keys_length/2)){
                             return "translate(" +
                                 (inner_rect_width*((i-keys_length/2) - (keys_length/3.5))) + "," +
@@ -179,9 +282,6 @@ class Tree{
                         return "translate(" + inner_rect_width*(i - (keys_length/3.5)) + ")";
                     });
 
-                frects.exit().remove();
-
-                frects = frectsEnter.merge(frects);
 
 
                 // Transition to the proper position for the node
@@ -195,76 +295,59 @@ class Tree{
 
 
             function drawLeafNode(element, d){
-                var boundbox = element.selectAll('.bbox')
-                    .data([{'key':'bbox','value':'bbox'}]);
 
-                //TODO: move css to style.css and transform to move box to left
-                boundbox.enter().append('rect')
-                    .attr('width', 75)
-                    .attr('height', 55)
-                    .attr('style', 'stroke: darkgray; stroke-width: 2px')
-                    .attr('fill', 'none')
-                    .attr('class','bbox');
-                    // .attr('transform','translate(0, )');
-
-                boundbox.exit().remove();
-
-                // element.selectAll('circle').remove();
+                element.selectAll('rect').remove();
                 element.selectAll('text').remove();
 
-               // Set up the scale - different for each leaf node
-                // sets position of each rect in leaf node
-                // console.log(d);
-                var positionScale = d3.scaleLinear()
-                    .domain([0, d.data.leafCounts.length])
-                    .range([0, 50]);
+                let frects = element.selectAll('innernode')
+                    .data(function(d){
+                        // return [i, keys[i], frequency, keys.length];
+                         return Object.entries(d.data.name)
+                    });
 
-                var rects = element.selectAll('labelbar')
-                    .data(d.data.leafCounts);
+                let frectsEnter = frects.enter().append('g')
+                                .attr('class', 'innernode');
 
-                var rectsEnter = rects.enter().append('rect');
+                frects = frectsEnter.merge(frects);
 
-                // console.log(d);
-                rectsEnter
-                    .attr('id', function (d) {
-                        return d[0];
-                    })
-                    .attr("y", function(d, i){return (positionScale(i)+3);})
-                    .attr("x", 0)
-                    .attr("width", function(d, i) {
-                        return leafHorizontalScale(d[1]);
-                    })
-                    // .attr("height",50/counts.length)
-                    .attr("height",7)
-                    // TODO: create a color scale for all labels
+                frects.exit().remove();
+
+                frects.append('rect')
+                    .attr("width", inner_rect_width)
+                    .attr("height", inner_rect_height)
+                    // TODO: create a color scale for all features
                     .style("fill", function (d) {
-                        return colorScale(colorMap[d[0]]);
+                        return colorScale([d[0]]);
                     })
-                    .attr("class","labelbar");
+                    .attr("x", -8);
+                     // .attr("transform", "translate(-2em,0)");
+                    // .style("fill", function(d) {
+                    //     console.log(d);
+                    //     return d._children ? "diagonal-stripe-1" : "#fff";
+                    // });
 
-                rects.exit().remove();
+                // Add  count for the nodes
+                frects.append('text')
+                    // .attr("dx", "2em")
+                    // .attr("dy", "2em")
+                    .attr("text-anchor", "middle")
+                    .text(function(d) {  return d[1]; })
+                    .attr('transform','translate(-1, 11)');
 
-                rects = rectsEnter.merge(rects);
-
-                rects.filter(function(d) { return d.value === "0"; }).remove();
-
-                rects.call(labelTip)
-                    .on("mouseover", labelTip.show)
-                    .on("mouseout", labelTip.hide);
 
                 // Transition to the proper position for the node
                 element.transition()
                   .duration(duration)
                   .attr("transform", function(d) {
-                      // console.log(d);
-                      return "translate(" + (d.x - (leafWidth/3.5)) + "," + d.y + ")";
+                      return "translate(" + d.x + "," + d.y + ")";
                    });
+
             }
 
 
 
             // Remove any exiting nodes
-            var nodeExit = node.exit().transition()
+            let nodeExit = node.exit().transition()
                 .duration(duration)
                 .attr("transform", function(d) {
                     return "translate(" + source.x + "," + source.y + ")";
@@ -282,19 +365,19 @@ class Tree{
             // ****************** links section ***************************
           
             // Update the links...
-            var link = that.svg.selectAll('path.link')
+            let link = that.svg.selectAll('path.link')
                 .data(links, function(d) { return d.id; });
           
             // Enter any new links at the parent's previous position.
-            var linkEnter = link.enter().insert('path', "g")
+            let linkEnter = link.enter().insert('path', "g")
                 .attr("class", "link")
                 .attr('d', function(d){
-                  var o = {y: source.y0, x: source.x0};
+                  let o = {y: source.y0, x: source.x0};
                   return diagonal(o, o)
                 });
           
             // UPDATE
-            var linkUpdate = linkEnter.merge(link);
+            let linkUpdate = linkEnter.merge(link);
           
             // Transition back to the parent element position
             linkUpdate.transition()
@@ -302,11 +385,11 @@ class Tree{
                 .attr('d', function(d){ return diagonal(d, d.parent) });
           
             // Remove any exiting links
-            var linkExit = link.exit().transition()
+            let linkExit = link.exit().transition()
                 .duration(duration)
                 .attr('d', function(d) {
-                    var o = {y: source.y0, x: source.x0};
-                //   var o = {x: source.x, y: source.y}
+                    let o = {y: source.y0, x: source.x0};
+                //   let o = {x: source.x, y: source.y}
                   return diagonal(o, o)
                 })
                 .remove();
@@ -320,7 +403,7 @@ class Tree{
             // Creates a curved (diagonal) path from parent to the child nodes
             function diagonal(s, d) {
           
-              var path = `M ${s.x} ${s.y}
+              let path = `M ${s.x} ${s.y}
                       C ${s.x} ${(s.y + d.y) / 2},
                         ${d.x} ${(s.y + d.y) / 2},
                         ${d.x} ${d.y}`;

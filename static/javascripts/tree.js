@@ -16,26 +16,44 @@ class Tree{
         // console.log('tree create function:');
         var that = this;
         //Initialize tooltip
-        let labelTip = d3.tip().attr("class", ".d3-tip").html((d) => {
+        let labelTip = d3.tip().attr("class", "d3-tip-node").html((d) => {
             // console.log(d);
-            return '<span>' + d[1] + '</span>' + ' sample(s) of ' + d[0]
+            // return '<span>' + d[1] + '</span>' + ' sample(s) of ' + d[0]
+            return d[1] + ' sample(s) of ' + d[0]
         });
 
-        let ruleTip = d3.tip().attr("class", ".d3-tip").html((d) => {
+        let ruleTip = d3.tip().attr("class", "d3-tip-node").html((d) => {
             // console.log(d.data.rule[1]);
             return d.data.rule[1];
         });
 
-        let colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(d3.range(0,9));
-        let colorMap = {};
-        for(i = 0; i < window.labels.length; ++i){
-             colorMap[window.labels[i]] = i;
-        }
+        let colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(window.labels);
+
+        // let colorMap = {};
+        // for(i = 0; i < window.labels.length; ++i){
+        //      colorMap[window.labels[i]] = i;
+        // }
         // console.log(colorMap);
         this.svg.selectAll('g').remove();
 
         that.svg.append('g')
         .attr("transform", "translate("+ 0 + "," + this.margin.top *2  + ")");
+
+
+
+        let legendsvg = d3.select("svg");
+
+        legendsvg.append("g")
+          .attr("class", "legendOrdinal")
+          .attr("transform", "translate(20,20)");
+
+        let legendOrdinal = d3.legendColor()
+          .shape("path", d3.symbol().type(d3.symbolSquare).size(150)())
+          .shapePadding(10)
+          .scale(colorScale);
+
+        legendsvg.select(".legendOrdinal")
+          .call(legendOrdinal);
 
         // leafHorizontalScale
         let leafWidth = 70;
@@ -143,47 +161,50 @@ class Tree{
 
                 element.append('rect')
                     .attr('class', 'node')
-                    .attr('width', splitNodeWidth)
+                    .attr('width', splitNodeWidth/2)
                     .attr("height", 20)
                     .style("fill", function(d) {
                         // console.log(d);
                         return d._children ? "lightsteelblue" : "#fff";
                     });
 
-                element.append('rect')
-                    .attr('class', 'rule')
-                    .attr('width', 1)
-                    .attr("height", 20)
-                    .attr('x', function (d) {
-                        // console.log( ruleScale(d.data.rule[1]) );
-                        // console.log( ruleScale(window.rangeValues[d.data.name].max) );
-                        return ruleScale(d.data.rule[1]);
-                    });
+                // element.append('rect')
+                //     .attr('class', 'rule')
+                //     .attr('width', 1)
+                //     .attr("height", 20)
+                //     .attr('x', function (d) {
+                //         // console.log( ruleScale(d.data.rule[1]) );
+                //         // console.log( ruleScale(window.rangeValues[d.data.name].max) );
+                //         return ruleScale(d.data.rule[1]);
+                //     });
                     // .call(ruleTip)
                     //     .on("mouseover", ruleTip.show)
                     //     .on("mouseout", ruleTip.hide);
 
-                // Add rule labels for the nodes
-                element.append('text')
-                    .attr("dx", "-2em")
-                    .attr("text-anchor", "middle")
-                    .text(function(d) {  return d.data.rule[1].toFixed(4); });
 
                 // Add labels for the nodes
                 element.append('text')
-                    .attr("dy", ".15em")
+                    .attr("dy", "-0.8em")
                     .attr("y", function(d) {
                         return d.children || d._children ? -13 : 13;
                     })
                     .attr("text-anchor", "middle")
                     .text(function(d) {  return d.data.name; });
 
+                // Add rule labels for the nodes
+                element.append('text')
+                    .attr("dx", "-2em")
+                    .attr("dy", "-0.5em")
+                    .attr("text-anchor", "middle")
+                    .text(function(d) {  return '< ' + d.data.rule[1].toFixed(4); });
+
                 // Transition to the proper position for the node
                 element.transition()
                   .duration(duration)
                   .attr("transform", function(d) {
                       // console.log(d);
-                      return "translate(" + (d.x - (splitNodeWidth/2))+ "," + d.y + ")";
+                      return "translate(" + (d.x - (splitNodeWidth/3.5))+ "," + d.y + ")";
+                      // return "translate(" + d.x + "," + d.y + ")";
                    });
                     // comment block -1
                     // console.log(d.data.name);
@@ -207,8 +228,8 @@ class Tree{
 
                 //TODO: move css to style.css and transform to move box to left
                 boundbox.enter().append('rect')
-                    .attr('width', 75)
-                    .attr('height', 55)
+                    .attr('width', 65)
+                    .attr('height', Math.min(56,(7 * d.data.leafCounts.length)))
                     .attr('style', 'stroke: darkgray; stroke-width: 2px')
                     .attr('fill', 'none')
                     .attr('class','bbox');
@@ -224,11 +245,11 @@ class Tree{
                 // console.log(d);
                 var positionScale = d3.scaleLinear()
                     .domain([0, d.data.leafCounts.length])
-                    .range([0, 50]);
+                    .range([0, Math.min(54,(6 * d.data.leafCounts.length))]);
 
                 var rects = element.selectAll('labelbar')
                     .data(d.data.leafCounts);
-
+                // console.log(d.data.leafCounts);
                 var rectsEnter = rects.enter().append('rect');
 
                 // console.log(d);
@@ -236,16 +257,16 @@ class Tree{
                     .attr('id', function (d) {
                         return d[0];
                     })
-                    .attr("y", function(d, i){return (positionScale(i)+3);})
+                    .attr("y", function(d, i){return (positionScale(i)+1);})
                     .attr("x", 0)
                     .attr("width", function(d, i) {
                         return leafHorizontalScale(d[1]);
                     })
                     // .attr("height",50/counts.length)
-                    .attr("height",7)
+                    .attr("height",6)
                     // TODO: create a color scale for all labels
                     .style("fill", function (d) {
-                        return colorScale(colorMap[d[0]]);
+                        return colorScale([d[0]]);
                     })
                     .attr("class","labelbar");
 

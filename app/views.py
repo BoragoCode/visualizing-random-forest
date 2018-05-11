@@ -1,10 +1,9 @@
 
-from flask import render_template, flash, json, jsonify
+from flask import render_template, json
 
 from app import app
 
-from flask import request, redirect, url_for
-from werkzeug.utils import secure_filename
+from flask import request
 
 from app.rfmodel import treefunction, aggr_treefunction
 
@@ -27,12 +26,20 @@ def learning():
     # request.get_data()
     data = json.loads(request.data)
     # print(data)
-    response = treefunction(max_depth=data["depth"],
+    if 'n_estimators' in data:
+        response = aggr_treefunction(max_depth=data["depth"],
+                            min_samples_split=data["minSampleSplit"],
+                            n_estimators=data["n_estimators"],
+                            data=data["data"], defaultdata=False)
+    else:
+        response = treefunction(max_depth=data["depth"],
                             min_samples_split=data["minSampleSplit"],
                             data=data["data"], defaultdata=False)
+
     response = json.dumps(response)
-    # print(response)
     return response
+
+    # print(response)
 
 
 @app.route('/defaultdata', methods=['POST'])

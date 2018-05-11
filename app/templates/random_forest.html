@@ -1,45 +1,75 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block body %}
-<div class="jumbotron">
+{#<div class="jumbotron container-fluid">#}
     <h2>Random forest</h2>
-    <div id="dvImportSegments" class="fileupload ">
-    <fieldset>
-        <legend>Upload your CSV File</legend>
-            <input type="file" name="File Upload" id="txtFileUpload" accept=".csv" />
-    </fieldset> <br>
-        <div>
-            <select id = "defaultData" class="selectpicker">
-            <option disabled selected value = ""> Pick dataset </option>
-            <option value = "Iris">Iris Data</option>
-            </select>
-        </div>
-    </div> <br>
-    <form>
-      <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3"> {#id="inlineFormInputGroup"#}
-        <div class="input-group-addon">max-depth</div>
-        <input type="number" min = 1 id = "depthVal" class="form-control" placeholder="Default">
+    <div class="row">
+      <div class="col-md-5">
+        <div id="dvImportSegments" class="fileupload ">
+        <fieldset>
+            <legend>Upload your CSV File</legend>
+                <input type="file" name="File Upload" id="txtFileUpload" accept=".csv" />
+        </fieldset> <br>
+            <div>
+                <select id = "defaultData" class="selectpicker">
+                <option disabled selected value = ""> Pick dataset </option>
+                <option value = "Iris">Iris Data</option>
+                </select>
+            </div>
+        </div> <br>
+        <form>
+          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-6"> {#id="inlineFormInputGroup"#}
+            <div class="input-group-addon">max-depth</div>
+            <input type="number" min = 1 id = "depthVal" class="form-control" placeholder="Default">
+          </div>
+          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-6">
+            <div class="input-group-addon">min-samples-split</div>
+            <input type="number" min = 2 id = "minSampleSplit" class="form-control" placeholder="Default">
+          </div>
+          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-6">
+            <div class="input-group-addon">no of trees</div>
+            <input type="number" min = 1 id = "n_estimators" class="form-control" placeholder="Default (10)">
+          </div>
+          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-6">
+            <div class="input-group-addon">max_features</div>
+            <input type="number" min = 1 id = "maxFeatures" class="form-control" placeholder="Default(all)">
+          </div>
+          <button type="button" id = "submitParams" class="btn btn-default">Submit</button>
+        </form>
       </div>
-      <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3">
-        <div class="input-group-addon">min-samples-split</div>
-        <input type="number" min = 2 id = "minSampleSplit" class="form-control" placeholder="Default">
+      <div class="col-md-4">
+        <h4>Legend</h4>
+        <svg id="legend"></svg>
       </div>
-      <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-3">
-        <div class="input-group-addon">no of trees</div>
-        <input type="number" min = 1 id = "n_estimators" class="form-control" placeholder="Default (10)">
+      <div class="col-md-3">
+            <h4>Variable Importance</h4>
+            <span id="varImp"></span>
+            <h4>Accuracy</h4>
+            <span></span>
+            <li id = "accuracy"></li>
       </div>
-
-      <button type="button" id = "submitParams" class="btn btn-default">Submit</button>
-    </form>
-
+    </div>
     <div id="nodeLink">
         <svg id="canvas"></svg>
     </div>
-</div>
+{#</div>#}
 
 <!-- Internal Scripts -->
+<script src="/static/libraries/d3-tip.js"></script>
+<script src="/static/libraries/d3-legend.js"></script>
 <script src="/static/javascripts/upload.js"></script>
 <script src="/static/javascripts/aggr_tree.js"></script>
-<script src="/static/libraries/d3-tip.js"></script>
 
 {% endblock %}
+
+    <div id="details" class="view">
+        <h2 id="edition">World Cup Title</h2>
+        <h3>Host</h3>
+        <span id="host"></span>
+        <h3>Winner</h3>
+        <span id="winner"></span>
+        <h3>Silver</h3>
+        <span id="silver"></span>
+        <h3>Teams</h3>
+        <span id="teams"></span>
+    </div>

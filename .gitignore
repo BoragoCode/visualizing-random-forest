@@ -45,7 +45,7 @@ Thumbs.db
 ###############
 *.env
 venv/
-
+project_report/
 # Ide #
 #######
 *.vscode

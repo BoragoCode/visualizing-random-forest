@@ -33,6 +33,7 @@ $(document).ready(function() {
                 data: JSON.stringify(params),
                 contentType: 'application/json',
                 success: function (response) {
+                    // console.log(response)
                         tree.create(response)
                 }
              })//close
