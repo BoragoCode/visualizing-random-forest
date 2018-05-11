@@ -110,17 +110,15 @@ def treefunction(max_depth, min_samples_split, data='null', defaultdata=True):
         iris = load_iris()
         X, y = iris.data, iris.target
         model = RandomForestClassifier(max_depth=max_depth,
-                                       min_samples_split=min_samples_split,
-                                       random_state=0)
+                                       min_samples_split=min_samples_split,random_state=0)
         model.fit(X, y)
         # model.estimators_[i].tree_ gives ith tree
         tree = rules(model.estimators_[0], iris.feature_names, iris.target_names)
         # TODO: aggregate the trees such that features and respective occurance at each level is recorded
         # model.estimators_: list of sk learn decision trees
-        # print(json.dumps(agg_tree, indent=2))
-        # print("----tree----")
-        # print(json.dumps(tree, indent=2))
-        return tree
+        feature_importance = dict(zip(iris.feature_names, model.feature_importances_))
+        feature_importance["cv_accuracy"] = np.mean(cross_val_score(model, X, y, cv=3))
+        return tree, feature_importance
     else:
         target_column = 'label'
         # create a dataframe object
@@ -133,7 +131,9 @@ def treefunction(max_depth, min_samples_split, data='null', defaultdata=True):
         model.fit(X, y)
         # model.estimators_[i].tree_ gives ith tree
         tree = rules(model.estimators_[0], X.columns.values, y.unique())
-        return tree
+        feature_importance = dict(zip(X.columns.values, model.feature_importances_))
+        feature_importance["cv_accuracy"] = np.mean(cross_val_score(model, X, y, cv=3))
+        return tree, feature_importance
 
 
 # if default data then load iris
@@ -157,12 +157,12 @@ def aggr_treefunction(max_depth, min_samples_split,  n_estimators, data='null', 
         X, y = iris.data, iris.target
         model = RandomForestClassifier(max_depth=max_depth,
                                        min_samples_split=min_samples_split,
-                                       random_state=0, n_estimators=n_estimators)
+                                       n_estimators=n_estimators, random_state=0)
         model.fit(X, y)
         # aggregate the trees such that features and respective occurance at each level is recorded
         # model.estimators_: list of sk learn decision trees
         agg_tree = aggregateTrees([e.tree_ for e in model.estimators_], iris.feature_names, iris.target_names)
-        feature_importance = (dict(zip(iris.feature_names, model.feature_importances_)))
+        feature_importance = dict(zip(iris.feature_names, model.feature_importances_))
         feature_importance["cv_accuracy"] = np.mean(cross_val_score(model, X, y, cv=3))
         # print("----tree----")
         # print(json.dumps(agg_tree, indent=2))
@@ -176,7 +176,7 @@ def aggr_treefunction(max_depth, min_samples_split,  n_estimators, data='null', 
         # fit a randomforestclassifier
         model = RandomForestClassifier(max_depth=max_depth,
                                        min_samples_split=min_samples_split,
-                                       random_state=0, n_estimators=n_estimators)
+                                       n_estimators=n_estimators, random_state=0)
         model.fit(X, y)
         # aggregate the trees such that features and respective occurance at each level is recorded
         # model.estimators_: list of sk learn decision trees

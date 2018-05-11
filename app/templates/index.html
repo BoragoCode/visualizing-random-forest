@@ -2,9 +2,9 @@
 {% block title %}Home{% endblock %}
 {% block body %}
 <div class="jumbotron container-fluid">
-    <h2>Random forest</h2>
+    <h2>Decision tree</h2>
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-5">
         <div id="dvImportSegments" class="fileupload ">
         <fieldset>
             <legend>Upload your CSV File</legend>
@@ -18,32 +18,35 @@
             </div>
         </div> <br>
         <form>
-          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-6"> {#id="inlineFormInputGroup"#}
+          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-8"> {#id="inlineFormInputGroup"#}
             <div class="input-group-addon">max-depth</div>
             <input type="number" min = 1 id = "depthVal" class="form-control" placeholder="Default">
           </div>
-          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-6">
+          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-8">
             <div class="input-group-addon">min-samples-split</div>
             <input type="number" min = 2 id = "minSampleSplit" class="form-control" placeholder="Default(2)">
           </div>
-          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-6">
+          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-8">
             <div class="input-group-addon">min-samples-leaf</div>
             <input type="number" min = 1 id = "minSamplesLeaf" class="form-control" placeholder="Default(1)">
           </div>
-          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-6">
+          <div class="form-group input-group mb-2 mr-sm-2 mb-sm-0 col-xs-8">
             <div class="input-group-addon">max_features</div>
             <input type="number" min = 1 id = "maxFeatures" class="form-control" placeholder="Default(all)">
           </div>
           <button type="button" id = "submitParams" class="btn btn-default">Submit</button>
         </form>
       </div>
-      <div class="col-md-6">
-          <div>
-              <h4>Legend</h4>
-          </div>
-          <div>
-            <svg id="legend"></svg>
-          </div>
+      <div class="col-md-3">
+        <h4>Legend (Labels)</h4>
+        <svg id="legend"></svg>
+      </div>
+      <div class="col-md-4">
+            <h4>Variable Importance</h4>
+            <span id="varImp"></span>
+            <span></span>
+            <h4>Accuracy</h4>
+            <li id = "accuracy"></li>
       </div>
     </div>
     <div id="nodeLink">

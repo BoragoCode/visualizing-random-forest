@@ -10,6 +10,7 @@ class Tree{
         .append("g")
         .attr("transform", "translate("+ 0 + "," + this.margin.top *2  + ")");
         // .attr("transform", "translate("+ this.margin.left + "," + this.margin.top + ")");
+        // this.oldaccuracy = -1;
     }
 
     create(response){
@@ -20,18 +21,23 @@ class Tree{
         // tree data
         let treeData = response_data[0];
         // tree data
-        let accuracyData = response_data[1];
+        let varData = response_data[1];
         let accuracy=[];
         let varImpData = [];
-        for(let item in accuracyData){
+        for(let item in varData){
             // this condition is required to prevent moving forward to prototype chain
-            if(accuracyData.hasOwnProperty(item)){
+            if(varData.hasOwnProperty(item)){
                 if(item === 'cv_accuracy'){
-                    accuracy= 'accuracy(3-fold-cv): '+accuracyData[item].toFixed(10);
+                    accuracy= 'accuracy(3-fold-cv): '+ varData[item].toFixed(10);
                      document.getElementById("accuracy").innerHTML = accuracy;
+                     // if(this.oldaccuracy !== -1){
+                     //     document.getElementById("change").innerHTML =
+                     //         'change: ' + (varData[item] - this.oldaccuracy);
+                     // }
+                     // this.oldaccuracy = varData[item].toFixed(10);
                 }
                 else{
-                    varImpData.push(item+': '+accuracyData[item].toFixed(6));
+                    varImpData.push(item+': '+varData[item].toFixed(6));
                 }
             }
         }
@@ -270,7 +276,7 @@ class Tree{
                     // .attr("dy", "2em")
                     .attr("text-anchor", "middle")
                     .text(function(d) {  return d[1]; })
-                    .attr('transform','translate(5, 10)');
+                    .attr('transform','translate(7, 11)');
 
                 frects.attr("transform", function(d,i) {
                         // console.log(d);

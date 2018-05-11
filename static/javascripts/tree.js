@@ -12,9 +12,55 @@ class Tree{
         // .attr("transform", "translate("+ this.margin.left + "," + this.margin.top + ")");
     }
 
-    create(response_data){
+    create(response){
         // console.log('tree create function:');
-        var that = this;
+        // let treeData = JSON.parse( response_data );
+        let response_data = JSON.parse( response );
+        let that = this;
+
+        // tree data
+        let treeData = response_data[0];
+        // tree data
+        let varData = response_data[1];
+        let accuracy=[];
+
+        // variable importance data and populate the list elements
+        let varImpData = [];
+        for(let item in varData){
+            // this condition is required to prevent moving forward to prototype chain
+            if(varData.hasOwnProperty(item)){
+                if(item === 'cv_accuracy'){
+                    accuracy= 'accuracy(3-fold-cv): '+ varData[item].toFixed(10);
+                     document.getElementById("accuracy").innerHTML = accuracy;
+                }
+                else{
+                    varImpData.push(item+': '+varData[item].toFixed(6));
+                }
+            }
+        }
+
+        // accuracy data
+        let varImpList = d3.select("#varImp").selectAll("li").data(varImpData);
+
+        //populate the list data
+        //enter selection
+        let varImpEnter = varImpList.enter()
+            .append("li")
+            .text(function(d){
+                return d;
+            });
+        //exit selection
+        varImpList.exit()
+            .remove();
+        //merge
+        varImpList = varImpEnter.merge(varImpList);
+        //update
+        varImpList
+            .text(function(d){
+                return d;
+        });
+
+
         //Initialize tooltip
         let labelTip = d3.tip().attr("class", "d3-tip-node").html((d) => {
             // console.log(d);
@@ -26,6 +72,8 @@ class Tree{
             // console.log(d.data.rule[1]);
             return d.data.rule[1];
         });
+
+        let features = Object.keys(window.rangeValues);
 
         let colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(window.labels);
 
@@ -41,7 +89,8 @@ class Tree{
 
 
 
-        let legendsvg = d3.select("svg");
+        let legendsvg = d3.select("svg")
+                    .attr("height",25 * window.labels.length);
 
         legendsvg.append("g")
           .attr("class", "legendOrdinal")
@@ -56,7 +105,7 @@ class Tree{
           .call(legendOrdinal);
 
         // leafHorizontalScale
-        let leafWidth = 70;
+        let leafWidth = 65;
         let maxLeafCount = 0;
         maxLeafCount = Object.values(window.labelCount)
             .reduce((a, b) => window.labelCount[a] > window.labelCount[b] ? a : b);
@@ -64,17 +113,18 @@ class Tree{
         let leafHorizontalScale = d3.scaleLinear()
           .range([0, leafWidth])
           .domain([0, maxLeafCount]);
-         let splitNodeWidth = 50;
+         let splitNodeWidth = 18;
 
-        var treeData = JSON.parse( response_data );
         // console.log(root);
-        var i = 0,
+        let i = 0,
         duration = 750,
         root;
 
 
         // declares a tree layout and assigns the size
-        let treemap = d3.tree().size([this.height, this.width]);
+        let treemap = d3.tree().size([this.height, this.width])
+                        .separation(function(a, b) { return (a.parent === b.parent ? 2 : 2); });
+
         
         // Assigns parent, children, height, depth
         root = d3.hierarchy(treeData, function(d) { return d.children; });
@@ -103,10 +153,10 @@ class Tree{
         function update(source) {
 
             // Assigns the x and y position for the nodes
-            var treeData = treemap(root);
+            let treeData = treemap(root);
           
             // Compute the new tree layout.
-            var nodes = treeData.descendants(),
+            let nodes = treeData.descendants(),
                 links = treeData.descendants().slice(1);
           
             // Normalize for fixed-depth.
@@ -115,7 +165,7 @@ class Tree{
             // ****************** Nodes section ***************************//
           
             // Update the nodes...
-            var node = that.svg.selectAll('g.node')
+            let node = that.svg.selectAll('g.node')
                 .data(nodes, function(d) {
                     // console.log(d);
                     // console.log(d.hasOwnProperty('children'));
@@ -123,7 +173,7 @@ class Tree{
                 });
           
             // Enter any new modes at the parent's previous position.
-            var nodeEnter = node.enter().append('g')
+            let nodeEnter = node.enter().append('g')
                 .attr('class', 'node')
                 .attr("transform", function(d) {
                   return "translate(" + source.x0 + "," + source.y0 + ")";
@@ -136,7 +186,7 @@ class Tree{
               });
 
              // UPDATE
-            var nodeUpdate = nodeEnter.merge(node);
+            let nodeUpdate = nodeEnter.merge(node);
 
 
             nodeUpdate.each(function (d) {
@@ -151,17 +201,17 @@ class Tree{
 
 
             function drawSplitNode(element, d){
-                let ruleScale = d3.scaleLinear()
-                    .range([0, splitNodeWidth])
-                    .domain([window.rangeValues[d.data.name].min,
-                    window.rangeValues[d.data.name].max]);
+                // let ruleScale = d3.scaleLinear()
+                //     .range([0, splitNodeWidth])
+                //     .domain([window.rangeValues[d.data.name].min,
+                //     window.rangeValues[d.data.name].max]);
 
                 element.selectAll('rect').remove();
                 element.selectAll('text').remove();
 
                 element.append('rect')
                     .attr('class', 'node')
-                    .attr('width', splitNodeWidth/2)
+                    .attr('width', splitNodeWidth)
                     .attr("height", 20)
                     .style("fill", function(d) {
                         // console.log(d);
@@ -203,7 +253,7 @@ class Tree{
                   .duration(duration)
                   .attr("transform", function(d) {
                       // console.log(d);
-                      return "translate(" + (d.x - (splitNodeWidth/3.5))+ "," + d.y + ")";
+                      return "translate(" + (d.x - (splitNodeWidth/2))+ "," + d.y + ")";
                       // return "translate(" + d.x + "," + d.y + ")";
                    });
                     // comment block -1
@@ -223,12 +273,12 @@ class Tree{
 
 
             function drawLeafNode(element, d){
-                var boundbox = element.selectAll('.bbox')
+                let boundbox = element.selectAll('.bbox')
                     .data([{'key':'bbox','value':'bbox'}]);
 
                 //TODO: move css to style.css and transform to move box to left
                 boundbox.enter().append('rect')
-                    .attr('width', 65)
+                    .attr('width', leafWidth)
                     .attr('height', Math.min(56,(7 * d.data.leafCounts.length)))
                     .attr('style', 'stroke: darkgray; stroke-width: 2px')
                     .attr('fill', 'none')
@@ -243,14 +293,14 @@ class Tree{
                // Set up the scale - different for each leaf node
                 // sets position of each rect in leaf node
                 // console.log(d);
-                var positionScale = d3.scaleLinear()
+                let positionScale = d3.scaleLinear()
                     .domain([0, d.data.leafCounts.length])
                     .range([0, Math.min(54,(6 * d.data.leafCounts.length))]);
 
-                var rects = element.selectAll('labelbar')
+                let rects = element.selectAll('labelbar')
                     .data(d.data.leafCounts);
                 // console.log(d.data.leafCounts);
-                var rectsEnter = rects.enter().append('rect');
+                let rectsEnter = rects.enter().append('rect');
 
                 // console.log(d);
                 rectsEnter
@@ -292,7 +342,7 @@ class Tree{
 
 
             // Remove any exiting nodes
-            var nodeExit = node.exit().transition()
+            let nodeExit = node.exit().transition()
                 .duration(duration)
                 .attr("transform", function(d) {
                     return "translate(" + source.x + "," + source.y + ")";
@@ -310,19 +360,19 @@ class Tree{
             // ****************** links section ***************************
           
             // Update the links...
-            var link = that.svg.selectAll('path.link')
+            let link = that.svg.selectAll('path.link')
                 .data(links, function(d) { return d.id; });
           
             // Enter any new links at the parent's previous position.
-            var linkEnter = link.enter().insert('path', "g")
+            let linkEnter = link.enter().insert('path', "g")
                 .attr("class", "link")
                 .attr('d', function(d){
-                  var o = {y: source.y0, x: source.x0};
+                  let o = {y: source.y0, x: source.x0};
                   return diagonal(o, o)
                 });
           
             // UPDATE
-            var linkUpdate = linkEnter.merge(link);
+            let linkUpdate = linkEnter.merge(link);
           
             // Transition back to the parent element position
             linkUpdate.transition()
@@ -330,11 +380,11 @@ class Tree{
                 .attr('d', function(d){ return diagonal(d, d.parent) });
           
             // Remove any exiting links
-            var linkExit = link.exit().transition()
+            let linkExit = link.exit().transition()
                 .duration(duration)
                 .attr('d', function(d) {
-                    var o = {y: source.y0, x: source.x0};
-                //   var o = {x: source.x, y: source.y}
+                    let o = {y: source.y0, x: source.x0};
+                //   let o = {x: source.x, y: source.y}
                   return diagonal(o, o)
                 })
                 .remove();
@@ -348,7 +398,7 @@ class Tree{
             // Creates a curved (diagonal) path from parent to the child nodes
             function diagonal(s, d) {
           
-              var path = `M ${s.x} ${s.y}
+              let path = `M ${s.x} ${s.y}
                       C ${s.x} ${(s.y + d.y) / 2},
                         ${d.x} ${(s.y + d.y) / 2},
                         ${d.x} ${d.y}`;

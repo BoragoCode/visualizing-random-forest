@@ -25,7 +25,7 @@ $(document).ready(function() {
             "sepal width (cm)": {"min": 2, "max":4.4},
             "petal length (cm)": {"min": 1, "max":6.9},
             "petal width (cm)": {"min": 0.1, "max":2.5}};
-            window.labelCount = {"setosa": 55, "versicolor": 55, "virginica": 55};
+            window.labelCount = {"setosa": 56, "versicolor": 55, "virginica": 55};
             window.labels = ["setosa", "versicolor", "virginica"];
             $.ajax({
                 type: "POST",
