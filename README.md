@@ -1,4 +1,4 @@
-## Visualizing sklearn's descision tree and random forest using D3's tree layout
+## Interactive visualizing for sklearn's descision tree and random forest
 
 ## Pre-requisites
     python3 -m pip install --user virtualenv    
